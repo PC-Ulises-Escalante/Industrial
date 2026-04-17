@@ -1,0 +1,182 @@
+/* ═══════════════════════════════════════════
+   PONENTES PAGE
+   ═══════════════════════════════════════════ */
+.ponentes-hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 10rem 2rem 3rem;
+}
+
+.ponentes-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    background: rgba(34, 211, 238, 0.08);
+    padding: 0.4rem 1.2rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+    animation: fadeInUp 0.6s ease-out both;
+}
+
+.ponentes-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--white) 0%, var(--cyan) 50%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.7s ease-out 0.1s both;
+}
+
+.ponentes-subtitle {
+    font-size: 1.05rem;
+    color: var(--slate-400);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+    animation: fadeInUp 0.7s ease-out 0.2s both;
+}
+
+/* Speakers grid */
+.ponentes-grid-section {
+    position: relative;
+    z-index: 1;
+    padding: 2rem 3rem 5rem;
+}
+
+.ponentes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Speaker card */
+.ponente-card {
+    border-radius: 24px;
+    padding: 2.2rem 1.8rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.ponente-card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+        0 0 0 1px rgba(34, 211, 238, 0.15),
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        0 0 30px rgba(34, 211, 238, 0.08);
+}
+
+/* Circular photo with gradient ring */
+.ponente-photo-ring {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    flex-shrink: 0;
+}
+
+.ponente-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg);
+}
+
+/* Text */
+.ponente-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-top: 0.3rem;
+}
+
+.ponente-role {
+    font-size: 0.82rem;
+    color: var(--cyan);
+    font-weight: 500;
+    opacity: 0.85;
+}
+
+/* Topic section */
+.ponente-topic {
+    margin-top: 0.5rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    width: 100%;
+}
+
+.ponente-topic-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+}
+
+.ponente-topic-desc {
+    font-size: 0.8rem;
+    color: var(--slate-400);
+    line-height: 1.6;
+}
+
+/* Social icons */
+.ponente-social {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+}
+
+.ponente-social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--slate-400);
+    transition: color 0.3s, background 0.3s, transform 0.3s;
+}
+
+.ponente-social-link:hover {
+    color: var(--cyan);
+    background: rgba(34, 211, 238, 0.12);
+    transform: scale(1.12);
+}
+
+/* Ponentes responsive */
+@media (max-width: 1000px) {
+    .ponentes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ponentes-grid-section {
+        padding: 2rem 1.5rem 4rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .ponentes-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+    }
+    .ponentes-hero {
+        padding: 8rem 1.5rem 2rem;
+    }
+}

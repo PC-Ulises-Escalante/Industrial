@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresas Invitadas — Semana Académica 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Particles -->
+    <div id="particles" aria-hidden="true"></div>
+    <!-- Grid background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+    <!-- Radial glows -->
+    <div class="radial-glows" aria-hidden="true"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass" id="navbar">
+        <div class="nav-links">
+            <a href="index.html#inicio" class="nav-link">Inicio</a>
+            <a href="index.html#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="ponentes.html" class="nav-link">Ponentes</a>
+            <a href="conferencias.html" class="nav-link">Conferencias</a>
+            <a href="deportes.html" class="nav-link">Deportes</a>
+            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="#" class="nav-link active">Empresas Invitadas</a>
+            <a href="index.html#historia" class="nav-link">Historia</a>
+            <a href="index.html#contacto" class="nav-link">Contacto</a>
+        </div>
+        <div class="nav-auth" id="nav-auth"></div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <section class="empresas-hero">
+        <span class="empresas-badge">Colaboradores</span>
+        <h1 class="empresas-title">Empresas Invitadas <span class="empresas-title-accent">/ Semana Académica 2026</span></h1>
+        <p class="empresas-subtitle">Empresas líderes de la industria que comparten su experiencia, innovación y oportunidades con la comunidad estudiantil</p>
+    </section>
+
+    <!-- STICKY CARDS: Empresas Invitadas -->
+    <section class="sticky-cards empresas-cards" id="empresas">
+        <div class="card" id="card-5">
+            <div class="col">
+                <h1>Siemens Automation</h1>
+                <p class="card-text">Nuestro liderazgo global en automatización industrial y soluciones digitales, impulsa la transformación digital en procesos industriales, ofreciendo soluciones inteligentes y eficientes para la industria del futuro.</p>
+                <div class="empresa-logo-text">SIEMENS</div>
+            </div>
+            <div class="col">
+                <img src="Eng.webp" alt="Siemens Automation" />
+            </div>
+        </div>
+        <div class="card" id="card-6">
+            <div class="col">
+                <img src="Eng.webp" alt="Bosch Engineering" />
+            </div>
+            <div class="col">
+                <h1>Bosch Engineering Group</h1>
+                <p class="card-text">Nuestras innovaciones en soluciones de movilidad y en soluciones de suministro a contenedores, optimizan la cadena de suministro mediante tecnología de punta y procesos eficientes.</p>
+                <div class="empresa-logo-text">BOSCH</div>
+            </div>
+        </div>
+        <div class="card" id="card-7">
+            <div class="col">
+                <h1>Schneider Electric</h1>
+                <p class="card-text">Nuestras soluciones de gestión de energía y automatización, combinan innovación sostenible con eficiencia operativa para construir un futuro energético más inteligente.</p>
+                <div class="empresa-logo-text">Schneider Electric</div>
+            </div>
+            <div class="col">
+                <img src="Ignge.webp" alt="Schneider Electric" />
+            </div>
+        </div>
+        <div class="card" id="card-8">
+            <div class="col">
+                <img src="Ignge.webp" alt="Samsung Mexicana" />
+            </div>
+            <div class="col">
+                <h1>Samsung Mexicana</h1>
+                <p class="card-text">Samsung en Tijuana tiene una historia de más de tres décadas como pilar clave en la producción global de electrónica, siendo la planta de manufactura más grande de la ciudad.</p>
+                <div class="empresa-logo-text">SAMSUNG</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-section glass" id="contacto">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Semana Académica 2026</h3>
+                <p>Instituto Tecnológico de Tijuana<br>Ingeniería Industrial</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>semana.academica@tectijuana.edu.mx</p>
+                <p>Tijuana, Baja California, México</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">FB</a>
+                    <a href="#" class="social-link" aria-label="Instagram">IG</a>
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Semana Académica — Ingeniería Industrial ITT. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="/script.js"></script>
+    <script src="/auth.js"></script>
+</body>
+</html>

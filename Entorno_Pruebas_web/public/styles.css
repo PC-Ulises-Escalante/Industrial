@@ -1,0 +1,15 @@
+﻿/* 1. PRIMERO LOS IMPORTS (Sin nada arriba de ellos) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
+
+@import url('base.css');
+@import url('navbar.css');
+@import url('hero.css');
+@import url('dashboard.css');
+@import url('sticky-cards.css');
+@import url('footer.css');
+@import url('ponentes.css');
+@import url('empresas.css');
+@import url('registro.css');
+@import url('admin.css');
+@import url('responsive.css');
+

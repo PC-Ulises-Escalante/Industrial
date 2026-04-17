@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semana Académica 2026 — Ingeniería Industrial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Particles -->
+    <div id="particles" aria-hidden="true"></div>
+    <!-- Grid background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+    <!-- Radial glows -->
+    <div class="radial-glows" aria-hidden="true"></div>
+    <!-- Noise overlay -->
+    <div class="noise" aria-hidden="true"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass" id="navbar">
+        <div class="nav-links">
+            <a href="#inicio" class="nav-link active">Inicio</a>
+            <a href="#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="ponentes.html" class="nav-link">Ponentes</a>
+            <a href="conferencias.html" class="nav-link">Conferencias</a>
+            <a href="deportes.html" class="nav-link">Deportes</a>
+            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="empresas_Invitadas.html" class="nav-link">Empresas Invitadas</a>
+            <a href="#historia" class="nav-link">Historia</a>
+            <a href="#contacto" class="nav-link">Contacto</a>
+        </div>
+        <div class="nav-auth" id="nav-auth">
+            <!-- Fallback visible markup in case JS fails to initialize -->
+            <button class="btn-login" id="btn-login">Iniciar Sesión</button>
+            <a href="registro.html" class="btn-register">Regístrate</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+        <div class="hero-grid">
+            <!-- Left: Content -->
+            <div class="hero-content">
+                <div class="badge glow-ring">
+                    <span class="badge-dot"></span>
+                    Edición 2026
+                </div>
+                <h1 class="hero-title">SEMANA<br>ACADÉMICA 2026</h1>
+                <h2 class="hero-subtitle">INGENIERÍA INDUSTRIAL</h2>
+                <p class="hero-description">Innovación, tecnología y el futuro de la industria. Una experiencia visual moderna, educativa y de nivel profesional en el Instituto Tecnológico de Tijuana.</p>
+                <div class="hero-actions">
+                    <a href="registro.html" class="btn-primary">Regístrate ahora</a>
+                    <div class="hero-meta">
+                        <span class="meta-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Mayo 12–16, 2026
+                        </span>
+                        <span class="meta-divider"></span>
+                        <span class="meta-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Tijuana, B.C.
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- Right: Logo Showcase -->
+            <div class="hero-illustration">
+                <div class="illus-glow"></div>
+                <!-- Orbital rings -->
+                <div class="illus-orbit illus-orbit-1"></div>
+                <div class="illus-orbit illus-orbit-2"></div>
+                <div class="illus-orbit illus-orbit-3"></div>
+                <!-- Corner accents -->
+                <div class="illus-corner illus-corner-tl"></div>
+                <div class="illus-corner illus-corner-tr"></div>
+                <div class="illus-corner illus-corner-bl"></div>
+                <div class="illus-corner illus-corner-br"></div>
+                <!-- Logo front and center -->
+                <img src="Semana.png" alt="Logo Semana Académica" class="illus-logo">
+            </div>
+        </div>
+    </section>
+
+    <!-- DASHBOARD: Sidebar + Main Content -->
+    <section class="dashboard" id="agenda">
+        <div class="dashboard-grid">
+            <!-- SIDEBAR -->
+            <aside class="sidebar glass" data-lenis-prevent>
+                <!-- Animated border overlay -->
+                <div class="sidebar-border-glow"></div>
+
+                <div class="sidebar-header">
+                    <div class="sidebar-date">
+                        <span class="sidebar-dot"></span>
+                        Mayo 12–16, 2026
+                    </div>
+                    <div class="sidebar-status-badge">
+                        <span class="status-pulse"></span>
+                        <span class="status-text">PRÓXIMAMENTE</span>
+                    </div>
+                    <div class="sidebar-location">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Tijuana, B.C.
+                    </div>
+                </div>
+
+                <!-- Ejes Temáticos Mini -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title-wrapper">
+                        <div class="sidebar-title-line"></div>
+                        <h3 class="sidebar-title">Ejes Temáticos</h3>
+                        <div class="sidebar-title-line"></div>
+                    </div>
+                    <div class="themes-mini-grid">
+                        <div class="theme-mini-card" data-color="cyan">
+                            <div class="theme-mini-card-border"></div>
+                            <div class="theme-mini-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                            </div>
+                            <span>AI & Data Science</span>
+                            <div class="theme-mini-tag">04 Charlas</div>
+                        </div>
+                        <div class="theme-mini-card" data-color="purple">
+                            <div class="theme-mini-card-border"></div>
+                            <div class="theme-mini-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                            </div>
+                            <span>Industria 5.0</span>
+                            <div class="theme-mini-tag">03 Charlas</div>
+                        </div>
+                        <div class="theme-mini-card" data-color="green">
+                            <div class="theme-mini-card-border"></div>
+                            <div class="theme-mini-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                            </div>
+                            <span>Automatización</span>
+                            <div class="theme-mini-tag">05 Charlas</div>
+                        </div>
+                        <div class="theme-mini-card" data-color="cyan">
+                            <div class="theme-mini-card-border"></div>
+                            <div class="theme-mini-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                            </div>
+                            <span>Optimización</span>
+                            <div class="theme-mini-tag">03 Charlas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cronograma -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title-wrapper">
+                        <div class="sidebar-title-line"></div>
+                        <h3 class="sidebar-title">Cronograma</h3>
+                        <div class="sidebar-title-line"></div>
+                    </div>
+                    <div class="schedule-list">
+                        <div class="schedule-timeline-line"></div>
+                        <div class="schedule-item" data-day="1">
+                            <div class="schedule-connector">
+                                <span class="schedule-node"></span>
+                            </div>
+                            <div class="schedule-day-box">
+                                <span class="schedule-label">LUN</span>
+                                <span class="schedule-day">12</span>
+                            </div>
+                            <div class="schedule-info">
+                                <span class="schedule-event">Ceremonia de Apertura</span>
+                                <span class="schedule-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    9:00 – 10:30 hrs
+                                </span>
+                                <div class="schedule-bar"><div class="schedule-bar-fill" data-width="72"></div></div>
+                            </div>
+                        </div>
+                        <div class="schedule-item" data-day="2">
+                            <div class="schedule-connector">
+                                <span class="schedule-node"></span>
+                            </div>
+                            <div class="schedule-day-box">
+                                <span class="schedule-label">MAR</span>
+                                <span class="schedule-day">13</span>
+                            </div>
+                            <div class="schedule-info">
+                                <span class="schedule-event">Industria 5.0</span>
+                                <span class="schedule-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    10:00 – 12:00 hrs
+                                </span>
+                                <div class="schedule-bar"><div class="schedule-bar-fill" data-width="85"></div></div>
+                            </div>
+                        </div>
+                        <div class="schedule-item" data-day="3">
+                            <div class="schedule-connector">
+                                <span class="schedule-node"></span>
+                            </div>
+                            <div class="schedule-day-box">
+                                <span class="schedule-label">MIÉ</span>
+                                <span class="schedule-day">14</span>
+                            </div>
+                            <div class="schedule-info">
+                                <span class="schedule-event">IA Aplicada</span>
+                                <span class="schedule-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    11:00 – 13:00 hrs
+                                </span>
+                                <div class="schedule-bar"><div class="schedule-bar-fill" data-width="68"></div></div>
+                            </div>
+                        </div>
+                        <div class="schedule-item" data-day="4">
+                            <div class="schedule-connector">
+                                <span class="schedule-node"></span>
+                            </div>
+                            <div class="schedule-day-box">
+                                <span class="schedule-label">JUE</span>
+                                <span class="schedule-day">15</span>
+                            </div>
+                            <div class="schedule-info">
+                                <span class="schedule-event">Automatización</span>
+                                <span class="schedule-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    9:30 – 11:30 hrs
+                                </span>
+                                <div class="schedule-bar"><div class="schedule-bar-fill" data-width="78"></div></div>
+                            </div>
+                        </div>
+                        <div class="schedule-item" data-day="5">
+                            <div class="schedule-connector">
+                                <span class="schedule-node"></span>
+                            </div>
+                            <div class="schedule-day-box">
+                                <span class="schedule-label">VIE</span>
+                                <span class="schedule-day">16</span>
+                            </div>
+                            <div class="schedule-info">
+                                <span class="schedule-event">Clausura & Networking</span>
+                                <span class="schedule-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    12:00 – 14:00 hrs
+                                </span>
+                                <div class="schedule-bar"><div class="schedule-bar-fill" data-width="60"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ponentes -->
+                <div class="sidebar-section" id="ponentes">
+                    <div class="sidebar-title-wrapper">
+                        <div class="sidebar-title-line"></div>
+                        <h3 class="sidebar-title">Conferencistas</h3>
+                        <div class="sidebar-title-line"></div>
+                    </div>
+                    <div class="speakers-grid">
+                        <div class="speaker-card">
+                            <div class="speaker-avatar">
+                                <div class="speaker-ring"></div>
+                                <div class="speaker-avatar-inner"></div>
+                            </div>
+                            <span class="speaker-name">Conferencista 1</span>
+                            <span class="speaker-role">AI & Machine Learning</span>
+                        </div>
+                        <div class="speaker-card">
+                            <div class="speaker-avatar">
+                                <div class="speaker-ring"></div>
+                                <div class="speaker-avatar-inner"></div>
+                            </div>
+                            <span class="speaker-name">Conferencista 2</span>
+                            <span class="speaker-role">Industria 5.0</span>
+                        </div>
+                        <div class="speaker-card">
+                            <div class="speaker-avatar">
+                                <div class="speaker-ring"></div>
+                                <div class="speaker-avatar-inner"></div>
+                            </div>
+                            <span class="speaker-name">Conferencista 3</span>
+                            <span class="speaker-role">Automatización</span>
+                        </div>
+                        <div class="speaker-card">
+                            <div class="speaker-avatar">
+                                <div class="speaker-ring"></div>
+                                <div class="speaker-avatar-inner"></div>
+                            </div>
+                            <span class="speaker-name">Conferencista 4</span>
+                            <span class="speaker-role">Data Science</span>
+                        </div>
+                        <div class="speaker-card">
+                            <div class="speaker-avatar">
+                                <div class="speaker-ring"></div>
+                                <div class="speaker-avatar-inner"></div>
+                            </div>
+                            <span class="speaker-name">Conferencista 5</span>
+                            <span class="speaker-role">IoT & Sensores</span>
+                        </div>
+                        <div class="speaker-card">
+                            <div class="speaker-avatar">
+                                <div class="speaker-ring"></div>
+                                <div class="speaker-avatar-inner"></div>
+                            </div>
+                            <span class="speaker-name">Conferencista 6</span>
+                            <span class="speaker-role">Optimización</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer mini -->
+                <div class="sidebar-footer">
+                    <div class="sidebar-footer-scan"></div>
+                    <div>
+                        <div class="sidebar-footer-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            ITT
+                        </div>
+                        <div class="sidebar-footer-sub">Ingeniería Industrial • 2026</div>
+                    </div>
+                    <div class="sidebar-footer-right">
+                        <div class="footer-stats">
+                            <div class="footer-stat">
+                                <span class="footer-stat-num" data-count="15">0</span>
+                                <span class="footer-stat-label">Charlas</span>
+                            </div>
+                            <span class="footer-dot"></span>
+                            <div class="footer-stat">
+                                <span class="footer-stat-num" data-count="6">0</span>
+                                <span class="footer-stat-label">Ponentes</span>
+                            </div>
+                            <span class="footer-dot"></span>
+                            <div class="footer-stat">
+                                <span class="footer-stat-num" data-count="5">0</span>
+                                <span class="footer-stat-label">Días</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN: Ejes Temáticos -->
+            <div class="main-content" id="ejes">
+                <div class="ejes-section">
+                    <div class="ejes-header">
+                        <span class="ejes-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            CORE TRACKS
+                        </span>
+                        <h2 class="section-heading">Ejes Temáticos</h2>
+                        <p class="section-subheading">Cuatro pilares de innovación que definen el futuro de la ingeniería industrial</p>
+                    </div>
+                    <div class="ejes-grid">
+                        <div class="eje-card" data-accent="cyan">
+                            <div class="eje-card-glow"></div>
+                            <div class="eje-card-border"></div>
+                            <div class="eje-number">01</div>
+                            <div class="eje-icon glow-ring">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="eje-title">AI & Data Science</h3>
+                                <p class="eje-desc">Inteligencia artificial, aprendizaje automático y análisis de datos para optimizar procesos industriales</p>
+                            </div>
+                        </div>
+                        <div class="eje-card" data-accent="purple">
+                            <div class="eje-card-glow"></div>
+                            <div class="eje-card-border"></div>
+                            <div class="eje-number">02</div>
+                            <div class="eje-icon glow-ring">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="eje-title">Industria 5.0</h3>
+                                <p class="eje-desc">Colaboración humano-máquina, gemelos digitales y manufactura inteligente de nueva generación</p>
+                            </div>
+                        </div>
+                        <div class="eje-card" data-accent="green">
+                            <div class="eje-card-glow"></div>
+                            <div class="eje-card-border"></div>
+                            <div class="eje-number">03</div>
+                            <div class="eje-icon glow-ring">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="eje-title">Automatización</h3>
+                                <p class="eje-desc">Robótica, PLC's, sistemas SCADA y automatización de líneas de producción</p>
+                            </div>
+                        </div>
+                        <div class="eje-card" data-accent="cyan">
+                            <div class="eje-card-glow"></div>
+                            <div class="eje-card-border"></div>
+                            <div class="eje-number">04</div>
+                            <div class="eje-icon glow-ring">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="eje-title">Optimización</h3>
+                                <p class="eje-desc">Lean manufacturing, Six Sigma, cadena de suministro y mejora continua de procesos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STICKY CARDS: Historia -->
+    <section class="sticky-cards" id="historia">
+        <div class="card" id="card-1">
+            <div class="col">
+                <h1>Semana Académica 2026</h1>
+                <p class="card-text">En diciembre del año 2021 se llevó a cabo la inauguración en la explanada del Tecnológico Unidad Tomas Aquino, contando con la presencia del Director del plantel el Ing. José Guillermo Cárdenas López, la subdirectora académica la Dra. Gabriela Elizabeth Martínez Mendívil, la Jefa del departamento de Ingeniería Industrial la Ing. María Alejandra Chequer Guijarro, el Responsable del Programa de Educación a Distancia el M.A. José Alonso Urías Celaya, el comité organizador del evento, Jefes de los departamentos de Desarrollo Académico, Servicios Escolares, División de Estudios Profesionales, Centro de Computo, así como Jefes académicos de los departamentos del CEA y Sistemas y Computación.</p>
+                <h3>Historial del Evento</h3>
+                <ul class="timeline-list">
+                    <li><span class="timeline-year">2022</span> Segunda edición</li>
+                    <li><span class="timeline-year">2023</span> Tercera edición</li>
+                    <li><span class="timeline-year">2024</span> Cuarta edición</li>
+                    <li><span class="timeline-year">2025</span> Quinta edición</li>
+                    <li><span class="timeline-year">2026</span> Sexta edición</li>
+                </ul>
+            </div>
+            <div class="col">
+                <img src="Eng.webp" alt="Ingeniería" />
+            </div>
+        </div>
+<div class="card" id="card-2">
+            <div class="col">
+                <h1>Misión y Visión</h1>
+                <p class="card-text">
+                    <strong>Misión:</strong> Fomentar el desarrollo integral y profesional de los estudiantes de Ingeniería Industrial a través de una colaboración activa y permanente con la industria y la academia. Buscamos ser el puente que conecte la teoría de las aulas con las exigencias reales del sector productivo, impulsando el pensamiento crítico, la innovación tecnológica y el liderazgo en nuestros futuros egresados.<br><br>
+                    
+                    <strong>Visión:</strong> Aspiramos a proyectar ingenieros industriales que sean agentes de cambio, capaces de optimizar sistemas complejos, implementar tecnologías de vanguardia y liderar proyectos sustentables en los sectores estratégicos de nuestra frontera.<br><br>
+
+                    <strong>Propósito del Evento:</strong> La semana académica tiene por objeto contribuir en la formación profesional a través del desarrollo de competencias y habilidades prácticas. Con conocimientos que surgen de los procesos productivos actuales, creamos un espacio de interacción académica y científica entre estudiantes, maestros e invitados especialistas de las diferentes industrias de la localidad con altos estándares mundiales.
+                </p>
+            </div>
+            <div class="col">
+                <img src="especialidades-ingenieria-industrial-1200x628.jpg" alt="Evento" />
+            </div>
+        </div>
+        <div class="card" id="card-3">
+            <div class="col">
+                <h1>Innovación Industrial</h1>
+                <p class="card-text">Durante la Semana Académica, profundizamos en los ejes fundamentales que impulsan el desarrollo productivo de nuestra región fronteriza. Abordamos temáticas críticas y de vanguardia como la Manufactura Avanzada, la aplicación de metodologías Lean Six Sigma, la ergonomía y la optimización global de la cadena de suministro.<br><br>
+                Tijuana, al ser un polo industrial clave a nivel internacional, exige que nuestros estudiantes estén a la vanguardia en tecnologías de la Industria 4.0, automatización de procesos y sustentabilidad. Hacemos un énfasis especial en sectores estratégicos como el de dispositivos médicos y la industria aeroespacial, áreas donde la ingeniería industrial tiene un impacto directo y transformador.<br><br>
+                A través de la presentación de proyectos, exposiciones y talleres especializados, los alumnos analizan y proponen soluciones a los retos tecnológicos actuales, preparándose para innovar dentro de entornos de alta exigencia competitiva.</p>
+            </div>
+            <div class="col">
+                <img src="Ignge.webp" alt="Industrial" />
+            </div>
+        </div>
+        <div class="card" id="card-4">
+            <div class="col">
+                <h1>Conectando Talento</h1>
+                <p class="card-text">Este  evento sirve como el puente definitivo entre el talento emergente de las aulas del Tecnológico y los líderes del sector productivo. Fomentamos la interacción directa y el networking mediante paneles de empleadores, conferencias magistrales y foros con egresados destacados, quienes comparten su visión sobre los requerimientos y desafíos del mercado laboral actual.<br><br>
+                La estrecha colaboración con cámaras empresariales y especialistas de las diferentes industrias de Baja California permite a los futuros ingenieros visualizar su camino profesional, entender la cultura organizacional de empresas de clase mundial y generar oportunidades de residencias profesionales o primer empleo.<br><br>
+                Más allá de los conocimientos técnicos, este espacio promueve activamente el desarrollo de habilidades blandas, la comunicación efectiva, el trabajo interdisciplinario y el liderazgo, competencias que son el diferenciador clave para el éxito de nuestros "Galgo" en la industria.
+                </p>
+            </div>
+            <div class="col">
+                <img src="18314497.png" alt="Talento" />
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO / FOOTER -->
+    <footer class="footer-section glass" id="contacto">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Semana Académica 2026</h3>
+                <p>Instituto Tecnológico de Tijuana<br>Ingeniería Industrial</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>semana.academica@tectijuana.edu.mx</p>
+                <p>Tijuana, Baja California, México</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">FB</a>
+                    <a href="#" class="social-link" aria-label="Instagram">IG</a>
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Semana Académica — Ingeniería Industrial ITT. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="/script.js"></script>
+    <script src="/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferencias — Semana Académica 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+    /* Estilos específicos para conferencias, similares a ponentes */
+    .conferencias-hero { position: relative; padding: 120px 0 80px; text-align: center; }
+    .conferencias-badge { display: inline-block; padding: 8px 16px; border-radius: 100px; background: rgba(34, 211, 238, 0.08); color: var(--cyan); font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; border: 1px solid rgba(34, 211, 238, 0.2); }
+    .conferencias-title { font-size: 3.5rem; font-weight: 800; font-family: 'Sora', sans-serif; background: linear-gradient(135deg, var(--white) 0%, var(--slate-300) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 16px; line-height: 1.1; }
+    .conferencias-subtitle { font-size: 1.1rem; color: var(--slate-400); max-width: 600px; margin: 0 auto 40px; line-height: 1.6; }
+
+    /* Botón admin para agregar conferencia */
+    #add-conferencia-btn { display:none; position:absolute; top:18px; right:24px; padding:0.45rem 0.7rem; font-size:0.9rem; border-radius:10px; border:1px solid rgba(34,211,238,0.25); background:rgba(34,211,238,0.06); color:var(--cyan); cursor:pointer; align-items:center; gap:8px; }
+    #add-conferencia-btn svg { transform: translateY(-1px); }
+
+    /* Grid de conferencias */
+    .conferencias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .conferencia-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .conferencia-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .conferencia-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .conferencia-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--white); }
+    .conferencia-fecha { font-size: 0.9rem; color: var(--cyan); font-weight: 600; }
+    .conferencia-lugar { font-size: 1rem; color: var(--slate-300); margin-bottom: 12px; }
+    .conferencia-ponente { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .ponente-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(34,211,238,0.3); }
+    .ponente-info h4 { margin: 0; font-size: 1rem; color: var(--white); }
+    .ponente-info p { margin: 0; font-size: 0.9rem; color: var(--slate-400); }
+    .conferencia-desc { color: var(--slate-400); line-height: 1.6; margin-bottom: 20px; }
+    .conferencia-actions { display: flex; justify-content: space-between; align-items: center; }
+    .inscritos-badge { font-size: 0.85rem; padding: 4px 12px; border-radius: 100px; background: rgba(34,211,238,0.1); color: var(--cyan); }
+    .btn-inscribirse { padding: 8px 16px; border-radius: 8px; background: var(--cyan); color: var(--gray-950); font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
+    .btn-inscribirse:hover { opacity: 0.9; }
+    .btn-inscrito { background: var(--slate-700); color: var(--slate-300); cursor: default; }
+
+    /* Modal similar a ponentes */
+    .modal-overlay { position:fixed; inset:0; background:rgba(3,7,18,0.6); display:none; align-items:center; justify-content:center; z-index:2000; }
+    .modal-overlay.active { display:flex; }
+    .modal-card { width:100%; max-width:600px; padding:22px; border-radius:14px; position:relative; border:1px solid var(--glass-border); background:var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+    .modal-close { position:absolute; right:14px; top:10px; background:none; border:none; color:var(--slate-400); font-size:22px; cursor:pointer; padding:6px; border-radius:8px; }
+    .modal-close:hover { background: rgba(255,255,255,0.04); color:var(--white); }
+    .add-conferencia-form .form-row{ display:flex; gap:12px; }
+    .add-conferencia-form .form-group{ margin-bottom:12px; display:flex; flex-direction:column; }
+    .add-conferencia-form input[type="text"], .add-conferencia-form input[type="date"], .add-conferencia-form textarea{ width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(148,163,184,0.06); color:#cbd5e1; }
+
+    @media (max-width: 640px) {
+        .conferencias-title { font-size: 2.5rem; }
+        .conferencias-grid { grid-template-columns: 1fr; padding: 0 16px; }
+        .modal-card { margin: 1rem; max-width: 92%; }
+        #add-conferencia-btn { top:12px; right:12px; padding:0.4rem 0.6rem; }
+    }
+    </style>
+</head>
+<body>
+    <!-- Particles -->
+    <div id="particles" aria-hidden="true"></div>
+    <!-- Grid background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+    <!-- Radial glows -->
+    <div class="radial-glows" aria-hidden="true"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass" id="navbar">
+        <div class="nav-links">
+            <a href="index.html#inicio" class="nav-link">Inicio</a>
+            <a href="index.html#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="ponentes.html" class="nav-link">Ponentes</a>
+            <a href="#" class="nav-link active">Conferencias</a>
+            <a href="deportes.html" class="nav-link">Deportes</a>
+            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="empresas_Invitadas.html" class="nav-link">Empresas Invitadas</a>
+            <a href="index.html#historia" class="nav-link">Historia</a>
+            <a href="index.html#contacto" class="nav-link">Contacto</a>
+        </div>
+        <div class="nav-auth" id="nav-auth"></div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <section class="conferencias-hero">
+        <span class="conferencias-badge">Conferencias</span>
+        <h1 class="conferencias-title">Conferencias Programadas</h1>
+        <p class="conferencias-subtitle">Explora las conferencias disponibles para la Semana Académica 2026. Regístrate en las que más te interesen.</p>
+        <button id="add-conferencia-btn" class="btn-admin-link" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Agregar Conferencia
+        </button>
+    </section>
+
+    <!-- CONFERENCES GRID -->
+    <section class="conferencias-grid-section">
+        <div class="conferencias-grid" id="conferencias-grid">
+            <div class="admin-empty">Cargando conferencias...</div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-section glass" id="contacto">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Semana Académica 2026</h3>
+                <p>Instituto Tecnológico de Tijuana<br>Ingeniería Industrial</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>semana.academica@tectijuana.edu.mx</p>
+                <p>Tijuana, Baja California, México</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">FB</a>
+                    <a href="#" class="social-link" aria-label="Instagram">IG</a>
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Semana Académica — Ingeniería Industrial ITT. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Lenis smooth scroll
+            const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 0.8 });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+            requestAnimationFrame(raf);
+
+            // Particles
+            const particlesEl = document.getElementById("particles");
+            if (particlesEl) {
+                const frag = document.createDocumentFragment();
+                for (let i = 0; i < 10; i++) {
+                    const p = document.createElement("div");
+                    p.classList.add("particle");
+                    const size = Math.random() * 3 + 2;
+                    p.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--duration:${Math.random()*6+4}s;--delay:${Math.random()*4}s;`;
+                    frag.appendChild(p);
+                }
+                particlesEl.appendChild(frag);
+            }
+
+            // Navbar scroll effect
+            const navbar = document.getElementById("navbar");
+            if (navbar) {
+                window.addEventListener("scroll", () => {
+                    navbar.classList.toggle("scrolled", window.scrollY > 60);
+                }, { passive: true });
+            }
+
+            function escapeHtml(str) {
+                const d = document.createElement('div');
+                d.textContent = str || '';
+                return d.innerHTML;
+            }
+
+            async function loadConferencias() {
+                const grid = document.getElementById('conferencias-grid');
+                if (!grid) return;
+                try {
+                    const res = await fetch('/api/conferencias');
+                    if (!res.ok) { grid.innerHTML = '<div class="admin-empty">No fue posible cargar conferencias</div>'; return; }
+                    const conferencias = await res.json();
+                    if (!Array.isArray(conferencias) || conferencias.length === 0) {
+                        grid.innerHTML = '<div class="admin-empty">No hay conferencias programadas aún</div>';
+                        return;
+                    }
+
+                    // Primero obtener mis inscripciones para marcar las ya inscritas
+                    let misInscripciones = [];
+                    try {
+                        const sessionRes = await fetch('/api/session');
+                        if (sessionRes.ok) {
+                            const session = await sessionRes.json();
+                            if (session.user) {
+                                const inscRes = await fetch(`/api/conferencias/inscripciones/${session.user.id}`);
+                                if (inscRes.ok) {
+                                    misInscripciones = await inscRes.json();
+                                }
+                            }
+                        }
+                    } catch (e) { console.log('No se pudieron cargar inscripciones', e); }
+
+                    grid.innerHTML = conferencias.map(c => {
+                        const fecha = new Date(c.fecha).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                        const yaInscrito = misInscripciones.some(i => i.conferencia_id === c.id);
+                        return `
+                            <div class="conferencia-card glass">
+                                <div class="conferencia-header">
+                                    <h3 class="conferencia-title">${escapeHtml(c.titulo)}</h3>
+                                    <span class="conferencia-fecha">${escapeHtml(fecha)}</span>
+                                </div>
+                                <p class="conferencia-lugar">📍 ${escapeHtml(c.lugar)}</p>
+                                ${c.ponente_nombre ? `
+                                <div class="conferencia-ponente">
+                                    <img src="${c.ponente_foto ? escapeHtml(c.ponente_foto) : 'Eng.webp'}" alt="${escapeHtml(c.ponente_nombre)}" class="ponente-avatar">
+                                    <div class="ponente-info">
+                                        <h4>${escapeHtml(c.ponente_nombre)}</h4>
+                                        <p>${escapeHtml(c.ponente_profesion || 'Presentador')}</p>
+                                    </div>
+                                </div>` : ''}
+                                <p class="conferencia-desc">${escapeHtml(c.descripcion || '')}</p>
+                                <div class="conferencia-actions">
+                                    <span class="inscritos-badge">${c.inscritos || 0} inscritos</span>
+                                    <button class="btn-inscribirse ${yaInscrito ? 'btn-inscrito' : ''}" data-id="${c.id}" ${yaInscrito ? 'disabled' : ''}>
+                                        ${yaInscrito ? 'Ya inscrito' : 'Inscribirse'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Agregar event listeners a los botones
+                    document.querySelectorAll('.btn-inscribirse:not(.btn-inscrito)').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const id = btn.getAttribute('data-id');
+                            try {
+                                const res = await fetch('/api/conferencias/inscribir', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ conferencia_id: id })
+                                });
+                                if (res.ok) {
+                                    btn.textContent = 'Ya inscrito';
+                                    btn.classList.add('btn-inscrito');
+                                    btn.disabled = true;
+                                    alert('Te has inscrito exitosamente a la conferencia.');
+                                    // Actualizar contador
+                                    const badge = btn.previousElementSibling;
+                                    const count = parseInt(badge.textContent) + 1;
+                                    badge.textContent = count + ' inscritos';
+                                } else {
+                                    const err = await res.json().catch(() => ({}));
+                                    alert(err.error || 'Error al inscribirse');
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert('Error de conexión');
+                            }
+                        });
+                    });
+
+                    // Fade-in animation
+                    const cards = document.querySelectorAll(".conferencia-card");
+                    if (cards.length && "IntersectionObserver" in window) {
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    entry.target.style.opacity = "1";
+                                    entry.target.style.transform = "translateY(0)";
+                                    observer.unobserve(entry.target);
+                                }
+                            });
+                        }, { threshold: 0.15 });
+                        cards.forEach(card => {
+                            card.style.opacity = "0";
+                            card.style.transform = "translateY(30px)";
+                            card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                            observer.observe(card);
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error loading conferencias', err);
+                    grid.innerHTML = '<div class="admin-empty">Error al cargar conferencias</div>';
+                }
+            }
+
+            // initial load
+            loadConferencias();
+
+            /* ── Admin: show add button and modal ── */
+            (async function initAdminUI(){
+                try {
+                    const s = await fetch('/api/session');
+                    if (!s.ok) return;
+                    const js = await s.json();
+                    if (!js.user || js.user.rol !== 'administrador') return;
+
+                    // show button
+                    const addBtn = document.getElementById('add-conferencia-btn');
+                    if (addBtn) {
+                        addBtn.style.display = 'inline-flex';
+                        addBtn.style.zIndex = '1200';
+                        addBtn.setAttribute('aria-hidden', 'false');
+
+                        // Position button similar to ponentes
+                        const hero = document.querySelector('.conferencias-hero');
+                        const navEl = document.querySelector('.navbar');
+                        function updateAddBtnPosition() {
+                            if (!addBtn || !hero || !navEl) return;
+                            const navRect = navEl.getBoundingClientRect();
+                            const heroRect = hero.getBoundingClientRect();
+                            const EXTRA_OFFSET = 28;
+                            let desiredTop = Math.round(navRect.bottom - heroRect.top + EXTRA_OFFSET);
+                            if (desiredTop < 8) desiredTop = 8;
+                            addBtn.style.top = desiredTop + 'px';
+                        }
+                        updateAddBtnPosition();
+                        window.addEventListener('resize', updateAddBtnPosition);
+                        window.addEventListener('scroll', updateAddBtnPosition, { passive: true });
+                    }
+
+                    // create modal markup
+                    const overlay = document.createElement('div');
+                    overlay.id = 'add-conferencia-modal';
+                    overlay.className = 'modal-overlay';
+                    overlay.classList.remove('active');
+                    overlay.innerHTML = `
+                        <div class="modal-card glass" role="dialog" aria-modal="true">
+                            <button type="button" class="modal-close" aria-label="Cerrar">×</button>
+                            <h3 style="margin:0 0 12px 0">Agregar Conferencia</h3>
+                            <form id="add-conferencia-public-form" class="add-conferencia-form">
+                                <div class="form-group">
+                                    <label>Título</label>
+                                    <input id="conf-titulo" type="text" required />
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group" style="flex:1">
+                                        <label>Fecha</label>
+                                        <input id="conf-fecha" type="date" required />
+                                    </div>
+                                    <div class="form-group" style="flex:1">
+                                        <label>Lugar</label>
+                                        <input id="conf-lugar" type="text" required />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Descripción</label>
+                                    <textarea id="conf-descripcion" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Foto del evento (opcional)</label>
+                                    <input id="conf-image" type="file" accept="image/*" />
+                                    <div class="image-preview" id="conf-image-preview" style="margin-top:8px;display:none;">
+                                        <img id="conf-image-preview-img" style="max-width:200px;max-height:150px;border-radius:8px;" />
+                                        <button type="button" id="conf-image-remove" style="margin-left:8px;padding:4px 8px;background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);border-radius:4px;cursor:pointer;">Eliminar</button>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group" style="flex:1">
+                                        <label>Ponente (nombre)</label>
+                                        <input id="conf-ponente-nombre" type="text" />
+                                    </div>
+                                    <div class="form-group" style="flex:1">
+                                        <label>Profesión del ponente</label>
+                                        <input id="conf-ponente-profesion" type="text" />
+                                    </div>
+                                </div>
+                                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;">
+                                    <button type="button" id="conf-cancel" class="table-btn">Cancelar</button>
+                                    <button type="submit" class="registro-submit">Agregar Conferencia</button>
+                                </div>
+                            </form>
+                        </div>
+                    `;
+                    document.body.appendChild(overlay);
+
+                    const openModal = () => { overlay.classList.add('active'); document.body.style.overflow = 'hidden'; };
+                    const closeModal = () => { overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+                    addBtn.addEventListener('click', openModal);
+                    const closeBtn = overlay.querySelector('.modal-close');
+                    closeBtn.addEventListener('click', closeModal);
+                    overlay.querySelector('#conf-cancel').addEventListener('click', closeModal);
+                    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+                    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+                    // Image handling
+                    const imageInput = overlay.querySelector('#conf-image');
+                    const imagePreview = overlay.querySelector('#conf-image-preview');
+                    const imagePreviewImg = overlay.querySelector('#conf-image-preview-img');
+                    const imageRemoveBtn = overlay.querySelector('#conf-image-remove');
+                    
+                    let imageData = null;
+                    
+                    imageInput.addEventListener('change', () => {
+                        const file = imageInput.files[0];
+                        if (!file) return;
+                        if (!file.type.startsWith('image/')) {
+                            alert('Por favor selecciona un archivo de imagen');
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            imageData = e.target.result;
+                            imagePreviewImg.src = imageData;
+                            imagePreview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    imageRemoveBtn.addEventListener('click', () => {
+                        imageData = null;
+                        imagePreview.style.display = 'none';
+                        imagePreviewImg.src = '';
+                        imageInput.value = '';
+                    });
+
+                    // submit
+                    const formEl = overlay.querySelector('#add-conferencia-public-form');
+                    formEl.addEventListener('submit', async (ev) => {
+                        ev.preventDefault();
+                        const payload = {
+                            titulo: overlay.querySelector('#conf-titulo').value.trim(),
+                            fecha: overlay.querySelector('#conf-fecha').value,
+                            lugar: overlay.querySelector('#conf-lugar').value.trim(),
+                            descripcion: overlay.querySelector('#conf-descripcion').value.trim(),
+                            ponente_nombre: overlay.querySelector('#conf-ponente-nombre').value.trim() || null,
+                            ponente_profesion: overlay.querySelector('#conf-ponente-profesion').value.trim() || null
+                        };
+                        if (!payload.titulo || !payload.fecha || !payload.lugar) return alert('Título, fecha y lugar son requeridos');
+                        
+                        if (imageData) {
+                            payload.imageData = imageData;
+                        }
+                        
+                        try {
+                            const res = await fetch('/api/conferencias', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            if (!res.ok) {
+                                const err = await res.json().catch(()=>({}));
+                                return alert(err.error || 'Error al crear conferencia');
+                            }
+                            closeModal();
+                            loadConferencias();
+                            alert('Conferencia agregada');
+                            // Reset form
+                            formEl.reset();
+                            imageData = null;
+                            imagePreview.style.display = 'none';
+                            imagePreviewImg.src = '';
+                        } catch (err) {
+                            console.error(err);
+                            alert('Error al conectar con el servidor');
+                        }
+                    });
+
+                } catch (err) {
+                    console.error('admin ui init error', err);
+                }
+            })();
+        });
+    </script>
+    <script src="/auth.js"></script>
+    <script src="/qr-management.js"></script>
+</body>
+</html>

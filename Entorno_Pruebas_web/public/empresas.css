@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════
+   EMPRESAS INVITADAS PAGE
+   ═══════════════════════════════════════════ */
+
+/* Page header */
+.empresas-hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 10rem 2rem 3rem;
+}
+
+.empresas-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    background: rgba(34, 211, 238, 0.08);
+    padding: 0.4rem 1.2rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+    animation: fadeInUp 0.6s ease-out both;
+}
+
+.empresas-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.7s ease-out 0.1s both;
+}
+
+.empresas-title-accent {
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.empresas-subtitle {
+    font-size: 1.05rem;
+    color: var(--slate-400);
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.7;
+    animation: fadeInUp 0.7s ease-out 0.2s both;
+}
+
+/* Wider cards for empresas page */
+.sticky-cards.empresas-cards .card {
+    width: 88%;
+    height: 65%;
+    gap: 2.5rem;
+    padding: 2.5rem 3rem;
+}
+
+/* Company logo text at bottom of text column */
+.empresa-logo-text {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    opacity: 0.6;
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+/* Card backgrounds for empresas (card-5 through card-11) */
+.card#card-5 {
+    background: var(--card-1);
+    z-index: 8;
+}
+.card#card-6 {
+    background: var(--card-2);
+    z-index: 7;
+}
+.card#card-7 {
+    background: var(--card-3);
+    z-index: 6;
+}
+.card#card-8 {
+    background: var(--card-4);
+    z-index: 5;
+}
+.card#card-9 {
+    background: var(--card-1);
+    z-index: 4;
+}
+.card#card-10 {
+    background: var(--card-2);
+    z-index: 3;
+}
+.card#card-11 {
+    background: var(--card-3);
+    z-index: 2;
+}
+
+/* Empresas responsive */
+@media (max-width: 1000px) {
+    .sticky-cards.empresas-cards .card {
+        width: calc(100% - 2rem);
+        height: 75%;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 2rem 1.5rem;
+    }
+    .sticky-cards.empresas-cards .card .col {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .empresas-hero {
+        padding: 8rem 1.5rem 2rem;
+    }
+    .sticky-cards.empresas-cards .card {
+        width: calc(100% - 1rem);
+        padding: 1.5rem 1rem;
+    }
+}

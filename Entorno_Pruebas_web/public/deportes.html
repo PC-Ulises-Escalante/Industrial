@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deportes — Semana Académica 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+    /* Estilos específicos para deportes */
+    .deportes-hero { position: relative; padding: 120px 0 80px; text-align: center; }
+    .deportes-badge { display: inline-block; padding: 8px 16px; border-radius: 100px; background: rgba(34, 211, 238, 0.08); color: var(--cyan); font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; border: 1px solid rgba(34, 211, 238, 0.2); }
+    .deportes-title { font-size: 3.5rem; font-weight: 800; font-family: 'Sora', sans-serif; background: linear-gradient(135deg, var(--white) 0%, var(--slate-300) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 16px; line-height: 1.1; }
+    .deportes-subtitle { font-size: 1.1rem; color: var(--slate-400); max-width: 600px; margin: 0 auto 40px; line-height: 1.6; }
+
+    /* Toggle para deportes */
+    .deportes-toggle { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; }
+    .deportes-toggle-btn { padding: 12px 24px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(148,163,184,0.06); color: var(--slate-400); font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .deportes-toggle-btn.active { background: rgba(34,211,238,0.1); border-color: rgba(34,211,238,0.3); color: var(--cyan); }
+    .deportes-toggle-btn:hover:not(.active) { background: rgba(255,255,255,0.05); }
+
+    /* Contenedor principal */
+    .deportes-container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+    /* Card de registro */
+    .deporte-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 32px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); margin-bottom: 40px; }
+    .deporte-card-glow { position: absolute; inset: 0; border-radius: 16px; background: radial-gradient(circle at 50% 0%, rgba(34,211,238,0.08), transparent 70%); pointer-events: none; z-index: -1; }
+
+    /* Formulario */
+    .deporte-form { display: flex; flex-direction: column; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-label { font-size: 0.95rem; font-weight: 600; color: var(--slate-300); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .form-input, .form-select { padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(148,163,184,0.06); color: var(--slate-100); font-size: 1rem; transition: border-color 0.2s; }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--cyan); }
+    .form-row { display: flex; gap: 20px; }
+    .form-row .form-group { flex: 1; }
+
+    /* Días disponibles */
+    .dias-disponibles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin: 20px 0; }
+    .dia-checkbox { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(148,163,184,0.06); cursor: pointer; transition: all 0.2s; }
+    .dia-checkbox:hover { background: rgba(255,255,255,0.05); }
+    .dia-checkbox input { display: none; }
+    .dia-checkbox span { font-weight: 600; color: var(--slate-300); }
+    .dia-checkbox input:checked + span { color: var(--cyan); }
+    .dia-checkbox input:checked ~ .checkmark { background: var(--cyan); border-color: var(--cyan); }
+    .checkmark { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--slate-600); display: flex; align-items: center; justify-content: center; }
+    .checkmark svg { width: 12px; height: 12px; color: var(--gray-950); display: none; }
+    .dia-checkbox input:checked ~ .checkmark svg { display: block; }
+
+    /* Integrantes */
+    .integrante-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(148,163,184,0.06); margin-bottom: 8px; }
+    .integrante-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(34,211,238,0.1); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-weight: bold; }
+    .integrante-info { flex: 1; }
+    .integrante-nombre { font-weight: 600; color: var(--slate-300); }
+    .integrante-email { font-size: 0.9rem; color: var(--slate-500); }
+    .btn-eliminar { background: none; border: none; color: var(--slate-500); cursor: pointer; padding: 4px; border-radius: 4px; }
+    .btn-eliminar:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+
+    /* Botón agregar integrante */
+    .agregar-integrante { display: flex; gap: 12px; }
+    .agregar-integrante input { flex: 1; }
+    .btn-agregar { padding: 12px 20px; border-radius: 8px; background: var(--cyan); color: var(--gray-950); font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
+    .btn-agregar:hover { opacity: 0.9; }
+
+    /* Botón de registro */
+    .btn-registrar { padding: 14px 28px; border-radius: 10px; background: var(--cyan); color: var(--gray-950); font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: opacity 0.2s; align-self: flex-start; }
+    .btn-registrar:hover { opacity: 0.9; }
+
+    /* Lista de equipos */
+    .equipos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
+    .equipo-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .equipo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .equipo-nombre { font-size: 1.3rem; font-weight: 700; color: var(--white); margin: 0; }
+    .equipo-deporte { font-size: 0.9rem; padding: 4px 12px; border-radius: 100px; background: rgba(34,211,238,0.1); color: var(--cyan); }
+    .equipo-dias { font-size: 0.95rem; color: var(--slate-400); margin-bottom: 20px; }
+    .equipo-integrantes { margin-top: 20px; }
+    .equipo-integrantes h4 { font-size: 1rem; color: var(--slate-300); margin-bottom: 12px; }
+    .integrante-list { display: flex; flex-direction: column; gap: 8px; }
+    .integrante-list-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px; }
+    .integrante-list-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(34,211,238,0.1); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 0.8rem; }
+    .integrante-list-info { flex: 1; }
+    .integrante-list-nombre { font-size: 0.9rem; color: var(--slate-300); }
+    .integrante-list-email { font-size: 0.8rem; color: var(--slate-500); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .deportes-title { font-size: 2.5rem; }
+        .deportes-toggle { flex-wrap: wrap; }
+        .deportes-toggle-btn { flex: 1; justify-content: center; }
+        .form-row { flex-direction: column; gap: 20px; }
+        .dias-disponibles { grid-template-columns: repeat(2, 1fr); }
+        .equipos-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+    <!-- Particles -->
+    <div id="particles" aria-hidden="true"></div>
+    <!-- Grid background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+    <!-- Radial glows -->
+    <div class="radial-glows" aria-hidden="true"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass" id="navbar">
+        <div class="nav-links">
+            <a href="index.html#inicio" class="nav-link">Inicio</a>
+            <a href="index.html#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="ponentes.html" class="nav-link">Ponentes</a>
+            <a href="conferencias.html" class="nav-link">Conferencias</a>
+            <a href="#" class="nav-link active">Deportes</a>
+            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="empresas_Invitadas.html" class="nav-link">Empresas Invitadas</a>
+            <a href="index.html#historia" class="nav-link">Historia</a>
+            <a href="index.html#contacto" class="nav-link">Contacto</a>
+        </div>
+        <div class="nav-auth" id="nav-auth"></div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <section class="deportes-hero">
+        <span class="deportes-badge">Actividades Deportivas</span>
+        <h1 class="deportes-title">Registro de Deportes</h1>
+        <p class="deportes-subtitle">Inscríbete a fútbol o básquetbol y forma tu equipo. Solo días Lunes, Martes, Miércoles y Viernes.</p>
+    </section>
+
+    <!-- TOGGLE DEPORTES -->
+    <div class="deportes-toggle">
+        <button class="deportes-toggle-btn active" data-deporte="futbol">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76a6 6 0 0 1 0 8.48m-8.48 0a6 6 0 0 1 0-8.48"/></svg>
+            Fútbol
+        </button>
+        <button class="deportes-toggle-btn" data-deporte="basquetbol">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Básquetbol
+        </button>
+    </div>
+
+    <div class="deportes-container">
+        <!-- FORMULARIO DE REGISTRO -->
+        <div class="deporte-card glass">
+            <div class="deporte-card-glow"></div>
+            <h2 style="margin: 0 0 24px 0; color: var(--white);">Registrar equipo</h2>
+            
+            <form id="deporte-form" class="deporte-form">
+                <div class="form-group">
+                    <label class="form-label" for="nombre-equipo">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Nombre del equipo
+                    </label>
+                    <input id="nombre-equipo" class="form-input" type="text" placeholder="Ej: Los Tigres" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Días disponibles
+                    </label>
+                    <div class="dias-disponibles">
+                        <label class="dia-checkbox">
+                            <input type="checkbox" name="dia" value="lunes" checked>
+                            <span>Lunes</span>
+                            <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        </label>
+                        <label class="dia-checkbox">
+                            <input type="checkbox" name="dia" value="martes" checked>
+                            <span>Martes</span>
+                            <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        </label>
+                        <label class="dia-checkbox">
+                            <input type="checkbox" name="dia" value="miercoles" checked>
+                            <span>Miércoles</span>
+                            <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        </label>
+                        <label class="dia-checkbox">
+                            <input type="checkbox" name="dia" value="viernes" checked>
+                            <span>Viernes</span>
+                            <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Integrantes del equipo
+                    </label>
+                    <div id="integrantes-list">
+                        <!-- Los integrantes se agregarán aquí dinámicamente -->
+                    </div>
+                    <div class="agregar-integrante">
+                        <input id="integrante-email" class="form-input" type="email" placeholder="Correo del integrante (debe estar registrado en la app)">
+                        <button type="button" id="btn-agregar-integrante" class="btn-agregar">Agregar</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-registrar">Registrar equipo</button>
+            </form>
+        </div>
+
+        <!-- LISTA DE EQUIPOS REGISTRADOS -->
+        <h2 style="color: var(--white); margin-top: 60px;">Equipos registrados</h2>
+        <div class="equipos-grid" id="equipos-grid">
+            <div class="admin-empty">Cargando equipos...</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer-section glass" id="contacto">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Semana Académica 2026</h3>
+                <p>Instituto Tecnológico de Tijuana<br>Ingeniería Industrial</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>semana.academica@tectijuana.edu.mx</p>
+                <p>Tijuana, Baja California, México</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">FB</a>
+                    <a href="#" class="social-link" aria-label="Instagram">IG</a>
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Semana Académica — Ingeniería Industrial ITT. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Lenis smooth scroll
+            const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 0.8 });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+            requestAnimationFrame(raf);
+
+            // Particles
+            const particlesEl = document.getElementById("particles");
+            if (particlesEl) {
+                const frag = document.createDocumentFragment();
+                for (let i = 0; i < 10; i++) {
+                    const p = document.createElement("div");
+                    p.classList.add("particle");
+                    const size = Math.random() * 3 + 2;
+                    p.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--duration:${Math.random()*6+4}s;--delay:${Math.random()*4}s;`;
+                    frag.appendChild(p);
+                }
+                particlesEl.appendChild(frag);
+            }
+
+            // Navbar scroll effect
+            const navbar = document.getElementById("navbar");
+            if (navbar) {
+                window.addEventListener("scroll", () => {
+                    navbar.classList.toggle("scrolled", window.scrollY > 60);
+                }, { passive: true });
+            }
+
+            // Toggle deportes
+            const toggleButtons = document.querySelectorAll('.deportes-toggle-btn');
+            let deporteSeleccionado = 'futbol';
+            toggleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    toggleButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    deporteSeleccionado = btn.getAttribute('data-deporte');
+                });
+            });
+
+            // Lista de integrantes local
+            let integrantes = [];
+
+            // Función para agregar integrante
+            document.getElementById('btn-agregar-integrante').addEventListener('click', async () => {
+                const emailInput = document.getElementById('integrante-email');
+                const email = emailInput.value.trim();
+                if (!email) return alert('Ingresa un correo');
+                
+                // Verificar si el usuario existe en el sistema
+                try {
+                    const res = await fetch(`/api/users/email/${encodeURIComponent(email)}`);
+                    if (!res.ok) {
+                        alert('El usuario con este correo no está registrado en la app.');
+                        return;
+                    }
+                    const user = await res.json();
+                    
+                    // Evitar duplicados
+                    if (integrantes.some(i => i.email === email)) {
+                        alert('Este integrante ya fue agregado.');
+                        return;
+                    }
+
+                    // Agregar a la lista local
+                    integrantes.push({
+                        id: user.id,
+                        nombre: user.nombre,
+                        email: user.email
+                    });
+
+                    // Actualizar UI
+                    renderIntegrantes();
+                    emailInput.value = '';
+                } catch (err) {
+                    console.error(err);
+                    alert('Error al verificar el usuario');
+                }
+            });
+
+            function renderIntegrantes() {
+                const container = document.getElementById('integrantes-list');
+                container.innerHTML = '';
+                integrantes.forEach((integrante, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'integrante-item';
+                    div.innerHTML = `
+                        <div class="integrante-avatar">${integrante.nombre.charAt(0).toUpperCase()}</div>
+                        <div class="integrante-info">
+                            <div class="integrante-nombre">${escapeHtml(integrante.nombre)}</div>
+                            <div class="integrante-email">${escapeHtml(integrante.email)}</div>
+                        </div>
+                        <button type="button" class="btn-eliminar" data-index="${index}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                // Agregar event listeners para eliminar
+                document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.getAttribute('data-index'));
+                        integrantes.splice(index, 1);
+                        renderIntegrantes();
+                    });
+                });
+            }
+
+            // Enviar formulario
+            document.getElementById('deporte-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const nombreEquipo = document.getElementById('nombre-equipo').value.trim();
+                const dias = Array.from(document.querySelectorAll('input[name="dia"]:checked')).map(cb => cb.value);
+                
+                if (!nombreEquipo) return alert('Ingresa un nombre para el equipo');
+                if (dias.length === 0) return alert('Selecciona al menos un día');
+                if (integrantes.length === 0) return alert('Agrega al menos un integrante (tú mismo)');
+
+                try {
+                    const sessionRes = await fetch('/api/session');
+                    if (!sessionRes.ok) throw new Error('No autenticado');
+                    const session = await sessionRes.json();
+                    if (!session.user) {
+                        alert('Debes iniciar sesión para registrar un equipo');
+                        return;
+                    }
+
+                    // Asegurarse de que el usuario actual esté en la lista de integrantes
+                    const usuarioActual = session.user;
+                    const yaIncluido = integrantes.some(i => i.email === usuarioActual.email);
+                    if (!yaIncluido) {
+                        integrantes.unshift({
+                            id: usuarioActual.id,
+                            nombre: usuarioActual.nombre,
+                            email: usuarioActual.email
+                        });
+                    }
+
+                    const payload = {
+                        nombre: nombreEquipo,
+                        deporte: deporteSeleccionado,
+                        dias: dias,
+                        integrantes: integrantes.map(i => i.id)
+                    };
+
+                    const res = await fetch('/api/deportes/equipos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        alert('Equipo registrado exitosamente');
+                        // Limpiar formulario
+                        document.getElementById('deporte-form').reset();
+                        integrantes = [];
+                        renderIntegrantes();
+                        // Recargar lista de equipos
+                        loadEquipos();
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        alert(err.error || 'Error al registrar equipo');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión');
+                }
+            });
+
+            // Cargar equipos existentes
+            async function loadEquipos() {
+                const grid = document.getElementById('equipos-grid');
+                if (!grid) return;
+                try {
+                    const res = await fetch('/api/deportes/equipos');
+                    if (!res.ok) { grid.innerHTML = '<div class="admin-empty">No fue posible cargar equipos</div>'; return; }
+                    const equipos = await res.json();
+                    if (!Array.isArray(equipos) || equipos.length === 0) {
+                        grid.innerHTML = '<div class="admin-empty">No hay equipos registrados aún</div>';
+                        return;
+                    }
+
+            grid.innerHTML = equipos.map(eq => {
+                const diasTexto = eq.dias.split(',').map(d => {
+                    const diasMap = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miércoles', viernes: 'Viernes' };
+                    return diasMap[d.trim()] || d.trim();
+                }).join(', ');
+                return `
+                    <div class="equipo-card glass" data-equipo-id="${eq.id}">
+                        <div class="equipo-header">
+                            <h3 class="equipo-nombre">${escapeHtml(eq.nombre)}</h3>
+                            <span class="equipo-deporte">${escapeHtml(eq.deporte)}</span>
+                        </div>
+                        <p class="equipo-dias">📅 ${escapeHtml(diasTexto)}</p>
+                        <div class="equipo-integrantes">
+                            <h4>Integrantes (${eq.integrantes_count})</h4>
+                            <div class="integrante-list">
+                                ${eq.integrantes.map(int => `
+                                    <div class="integrante-list-item">
+                                        <div class="integrante-list-avatar">${int.nombre.charAt(0).toUpperCase()}</div>
+                                        <div class="integrante-list-info">
+                                            <div class="integrante-list-nombre">${escapeHtml(int.nombre)}</div>
+                                            <div class="integrante-list-email">${escapeHtml(int.email)}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- QR Management Section (only for admin/maestro) -->
+                        <div class="qr-management-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(148,163,184,0.1); display: none;">
+                            <div class="qr-status" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span class="qr-status-text" style="font-size: 0.9rem; color: var(--slate-400);">QR no generado</span>
+                                <div class="qr-actions" style="display: flex; gap: 8px;">
+                                    <button class="btn-qr-generate" style="padding: 6px 12px; border-radius: 6px; background: var(--cyan); color: var(--gray-950); font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem;">Generar QR</button>
+                                    <button class="btn-qr-view" style="padding: 6px 12px; border-radius: 6px; background: var(--slate-700); color: var(--slate-200); font-weight: 600; border: 1px solid rgba(148,163,184,0.2); cursor: pointer; font-size: 0.85rem; display: none;">Ver QR</button>
+                                    <button class="btn-attendance-view" style="padding: 6px 12px; border-radius: 6px; background: var(--green); color: var(--gray-950); font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem;">Ver Asistencia</button>
+                                </div>
+                            </div>
+                            <div class="qr-preview-container" style="display: none; text-align: center; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-top: 12px;">
+                                <img class="qr-preview-image" style="max-width: 200px; height: auto; margin: 0 auto 12px; display: block;">
+                                <a class="qr-scan-url" style="display: block; font-size: 0.85rem; color: var(--cyan); word-break: break-all; margin-bottom: 12px;" target="_blank"></a>
+                                <button class="btn-close-preview" style="padding: 6px 12px; border-radius: 6px; background: var(--slate-700); color: var(--slate-200); font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem;">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+                    // Fade-in animation
+                    const cards = document.querySelectorAll(".equipo-card");
+                    if (cards.length && "IntersectionObserver" in window) {
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    entry.target.style.opacity = "1";
+                                    entry.target.style.transform = "translateY(0)";
+                                    observer.unobserve(entry.target);
+                                }
+                            });
+                        }, { threshold: 0.15 });
+                        cards.forEach(card => {
+                            card.style.opacity = "0";
+                            card.style.transform = "translateY(30px)";
+                            card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                            observer.observe(card);
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error loading equipos', err);
+                    grid.innerHTML = '<div class="admin-empty">Error al cargar equipos</div>';
+                }
+            }
+
+            // Inicializar
+            loadEquipos();
+
+            function escapeHtml(str) {
+                const d = document.createElement('div');
+                d.textContent = str || '';
+                return d.innerHTML;
+            }
+        });
+
+        // QR Management for Deportes
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for auth to load
+            await new Promise(resolve => {
+                if (typeof window.checkAuth !== 'undefined') {
+                    resolve();
+                } else {
+                    setTimeout(resolve, 500);
+                }
+            });
+
+            // Check if user is admin/maestro
+            const sessionRes = await fetch('/api/session');
+            if (!sessionRes.ok) return;
+            const session = await sessionRes.json();
+            if (!session.user || !['administrador', 'maestro'].includes(session.user.rol)) return;
+
+            // Show QR sections for all equipo cards
+            const equipoCards = document.querySelectorAll('.equipo-card[data-equipo-id]');
+            equipoCards.forEach(card => {
+                const qrSection = card.querySelector('.qr-management-section');
+                if (qrSection) {
+                    qrSection.style.display = 'block';
+                    const equipoId = card.dataset.equipoId;
+                    initQRManagementForEquipo(equipoId, qrSection);
+                }
+            });
+        });
+
+        async function initQRManagementForEquipo(equipoId, qrSection) {
+            const statusText = qrSection.querySelector('.qr-status-text');
+            const generateBtn = qrSection.querySelector('.btn-qr-generate');
+            const viewBtn = qrSection.querySelector('.btn-qr-view');
+            const attendanceBtn = qrSection.querySelector('.btn-attendance-view');
+            const previewContainer = qrSection.querySelector('.qr-preview-container');
+            const qrImage = qrSection.querySelector('.qr-preview-image');
+            const scanUrl = qrSection.querySelector('.qr-scan-url');
+            const closeBtn = qrSection.querySelector('.btn-close-preview');
+
+            // Load QR status
+            async function loadQRStatus() {
+                try {
+                    const res = await fetch(`/api/deportes/equipos/${equipoId}/qr`);
+                    if (res.ok) {
+                        const qrData = await res.json();
+                        
+                        const expiresAt = new Date(qrData.expires_at);
+                        const now = new Date();
+                        const timeLeft = expiresAt - now;
+                        const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+                        
+                        let statusMsg = `QR activo`;
+                        if (hoursLeft > 0) {
+                            statusMsg += ` • Expira en ${hoursLeft}h`;
+                        } else {
+                            statusMsg += ` • Expirado`;
+                        }
+                        
+                        statusText.textContent = statusMsg;
+                        statusText.style.color = hoursLeft > 0 ? 'var(--green)' : 'var(--red)';
+                        viewBtn.style.display = 'inline-block';
+                        generateBtn.textContent = 'Regenerar QR';
+                        
+                    } else if (res.status === 404) {
+                        statusText.textContent = 'QR no generado';
+                        statusText.style.color = 'var(--slate-400)';
+                        viewBtn.style.display = 'none';
+                        generateBtn.textContent = 'Generar QR';
+                    } else {
+                        statusText.textContent = 'Error al cargar QR';
+                        statusText.style.color = 'var(--red)';
+                    }
+                } catch (err) {
+                    console.error('Error loading QR status:', err);
+                    statusText.textContent = 'Error al cargar QR';
+                    statusText.style.color = 'var(--red)';
+                }
+            }
+
+            // Generate QR
+            async function generateQR() {
+                try {
+                    const res = await fetch(`/api/deportes/equipos/${equipoId}/qr`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (res.ok) {
+                        const qrData = await res.json();
+                        await loadQRStatus();
+                        // Show preview
+                        viewQR();
+                    } else {
+                        alert('Error al generar QR');
+                    }
+                } catch (err) {
+                    console.error('Error generating QR:', err);
+                    alert('Error de conexión');
+                }
+            }
+
+            // View QR
+            async function viewQR() {
+                try {
+                    const res = await fetch(`/api/deportes/equipos/${equipoId}/qr`);
+                    if (res.ok) {
+                        const qrData = await res.json();
+                        qrImage.src = qrData.qr_data_url;
+                        scanUrl.href = qrData.scan_url;
+                        scanUrl.textContent = qrData.scan_url;
+                        previewContainer.style.display = 'block';
+                    } else {
+                        alert('No se pudo cargar el QR');
+                    }
+                } catch (err) {
+                    console.error('Error viewing QR:', err);
+                    alert('Error de conexión');
+                }
+            }
+
+            // View attendance
+            async function viewAttendance() {
+                try {
+                    const res = await fetch(`/api/deportes/equipos/${equipoId}/asistencias`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const total = data.total_asistencias;
+                        const asistencias = data.asistencias;
+                        
+                        let html = `<div style="max-height: 400px; overflow-y: auto; text-align: left;">`;
+                        html += `<h4 style="margin-bottom: 12px; color: var(--slate-300);">Asistencias: ${total}</h4>`;
+                        
+                        if (asistencias.length > 0) {
+                            html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+                            asistencias.forEach(a => {
+                                const date = new Date(a.scanned_at).toLocaleString();
+                                html += `
+                                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                                        <div style="font-weight: 600; color: var(--slate-300);">${a.nombre}</div>
+                                        <div style="font-size: 0.85rem; color: var(--slate-500);">${a.email}</div>
+                                        <div style="font-size: 0.8rem; color: var(--slate-600);">${date}</div>
+                                    </div>
+                                `;
+                            });
+                            html += `</div>`;
+                        } else {
+                            html += `<p style="color: var(--slate-500);">No hay asistencias registradas</p>`;
+                        }
+                        html += `</div>`;
+                        
+                        alertModal('Asistencias del Equipo', html);
+                    } else {
+                        alert('No se pudieron cargar las asistencias');
+                    }
+                } catch (err) {
+                    console.error('Error viewing attendance:', err);
+                    alert('Error de conexión');
+                }
+            }
+
+            // Helper function for modal
+            function alertModal(title, content) {
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                const box = document.createElement('div');
+                box.style.cssText = 'background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;backdrop-filter:blur(16px);';
+                box.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="margin:0;color:var(--white);">${title}</h3>
+                        <button class="close-modal" style="background:none;border:none;color:var(--slate-400);cursor:pointer;font-size:1.2rem;">×</button>
+                    </div>
+                    <div>${content}</div>
+                `;
+                modal.appendChild(box);
+                document.body.appendChild(modal);
+                
+                box.querySelector('.close-modal').addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                });
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                    }
+                });
+            }
+
+            // Add event listeners
+            generateBtn.addEventListener('click', generateQR);
+            viewBtn.addEventListener('click', viewQR);
+            attendanceBtn.addEventListener('click', viewAttendance);
+            closeBtn.addEventListener('click', () => {
+                previewContainer.style.display = 'none';
+            });
+
+            // Initial load
+            loadQRStatus();
+        }
+    </script>
+    <script src="/auth.js"></script>
+</body>
+
+</html>

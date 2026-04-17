@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios — Semana Académica 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Particles -->
+    <div id="particles" aria-hidden="true"></div>
+    <!-- Grid background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+    <!-- Radial glows -->
+    <div class="radial-glows" aria-hidden="true"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass" id="navbar">
+        <div class="nav-links">
+            <a href="index.html#inicio" class="nav-link">Inicio</a>
+            <a href="index.html#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="ponentes.html" class="nav-link">Ponentes</a>
+            <a href="conferencias.html" class="nav-link">Conferencias</a>
+            <a href="deportes.html" class="nav-link">Deportes</a>
+            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="empresas_Invitadas.html" class="nav-link">Empresas Invitadas</a>
+            <a href="index.html#historia" class="nav-link">Historia</a>
+            <a href="index.html#contacto" class="nav-link">Contacto</a>
+        </div>
+        <div class="nav-auth" id="nav-auth"></div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="admin-hero">
+        <span class="admin-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Gestión
+        </span>
+        <h1 class="admin-title">Usuarios</h1>
+        <p class="admin-subtitle">Administra los perfiles registrados en la Semana Académica 2026</p>
+    </section>
+
+    <!-- FILTERS -->
+    <section class="users-filter-section">
+        <div class="users-filters">
+            <input type="text" class="filter-input" id="filter-search" placeholder="Buscar por nombre o email...">
+            <select class="filter-select" id="filter-role">
+                <option value="">Todos los roles</option>
+                <option value="alumno">Alumnos</option>
+                <option value="invitado">Invitados</option>
+                <option value="staff">Staff</option>
+                <option value="administrador">Administradores</option>
+            </select>
+            <span class="filter-count" id="filter-count">0 usuarios</span>
+        </div>
+    </section>
+
+    <!-- USERS TABLE -->
+    <section class="admin-table-section">
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Núm. Control</th>
+                        <th>Semestre</th>
+                        <th>Edad</th>
+                        <th>Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr>
+                        <td colspan="9" class="admin-empty">Cargando usuarios...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-section glass" id="contacto">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Semana Académica 2026</h3>
+                <p>Instituto Tecnológico de Tijuana<br>Ingeniería Industrial</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>semana.academica@tectijuana.edu.mx</p>
+                <p>Tijuana, Baja California, México</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">FB</a>
+                    <a href="#" class="social-link" aria-label="Instagram">IG</a>
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Semana Académica — Ingeniería Industrial ITT. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div class="admin-toast" id="admin-toast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="admin-toast-msg"></span>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let allUsers = [];
+        let currentUserRole = null;
+
+        /* ── Particles ── */
+        const particlesEl = document.getElementById("particles");
+        if (particlesEl) {
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement("div");
+                p.classList.add("particle");
+                const size = Math.random() * 3 + 2;
+                p.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--duration:${Math.random()*6+4}s;--delay:${Math.random()*4}s;`;
+                frag.appendChild(p);
+            }
+            particlesEl.appendChild(frag);
+        }
+
+        /* ── Navbar scroll ── */
+        const navbar = document.getElementById("navbar");
+        if (navbar) {
+            window.addEventListener("scroll", () => {
+                navbar.classList.toggle("scrolled", window.scrollY > 60);
+            }, { passive: true });
+        }
+
+        /* ── Get current user role ── */
+        async function init() {
+            try {
+                const sessionRes = await fetch('/api/session');
+                const sessionData = await sessionRes.json();
+                currentUserRole = sessionData.user ? sessionData.user.rol : null;
+            } catch { /* handled by auth.js */ }
+            loadUsers();
+        }
+
+        /* ── Load Users ── */
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/users');
+                if (!res.ok) return;
+                allUsers = await res.json();
+                applyFilters();
+            } catch {
+                document.getElementById('users-table-body').innerHTML =
+                    '<tr><td colspan="9" class="admin-empty">Error al cargar usuarios</td></tr>';
+            }
+        }
+
+        /* ── Filters ── */
+        document.getElementById('filter-search').addEventListener('input', applyFilters);
+        document.getElementById('filter-role').addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const search = document.getElementById('filter-search').value.trim().toLowerCase();
+            const roleFilter = document.getElementById('filter-role').value;
+
+            let filtered = allUsers;
+            if (roleFilter) {
+                filtered = filtered.filter(u => u.rol === roleFilter);
+            }
+            if (search) {
+                filtered = filtered.filter(u =>
+                    u.nombre.toLowerCase().includes(search) ||
+                    u.email.toLowerCase().includes(search)
+                );
+            }
+
+            document.getElementById('filter-count').textContent =
+                `${filtered.length} usuario${filtered.length !== 1 ? 's' : ''}`;
+
+            renderTable(filtered);
+        }
+
+        /* ── Render Table ── */
+        function renderTable(users) {
+            const tbody = document.getElementById('users-table-body');
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="9" class="admin-empty">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        No se encontraron usuarios
+                    </td></tr>`;
+                return;
+            }
+            const isAdmin = currentUserRole === 'administrador';
+            tbody.innerHTML = users.map(u => `
+                <tr data-id="${u.id}">
+                    <td>${u.id}</td>
+                    <td>${escapeHtml(u.nombre)}</td>
+                    <td>${escapeHtml(u.email)}</td>
+                    <td>
+                        ${isAdmin
+                            ? `<select class="role-edit-select" data-id="${u.id}" data-original="${u.rol}">
+                                <option value="alumno" ${u.rol==='alumno'?'selected':''}>Alumno</option>
+                                <option value="invitado" ${u.rol==='invitado'?'selected':''}>Invitado</option>
+                                <option value="staff" ${u.rol==='staff'?'selected':''}>Staff</option>
+                                <option value="administrador" ${u.rol==='administrador'?'selected':''}>Admin</option>
+                               </select>`
+                            : `<span class="role-badge role-badge-${u.rol}">${u.rol}</span>`
+                        }
+                    </td>
+                    <td>${u.numero_control || '—'}</td>
+                    <td>${u.semestre || '—'}</td>
+                    <td>${u.edad || '—'}</td>
+                    <td>${formatDate(u.created_at)}</td>
+                    <td>
+                        <div class="table-actions">
+                            ${isAdmin ? `<button class="table-btn table-btn-danger" onclick="deleteUser(${u.id}, '${escapeHtml(u.nombre)}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Eliminar
+                            </button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Role change listeners
+            if (isAdmin) {
+                tbody.querySelectorAll('.role-edit-select').forEach(select => {
+                    select.addEventListener('change', async (e) => {
+                        const userId = e.target.dataset.id;
+                        const newRole = e.target.value;
+                        try {
+                            const res = await fetch(`/api/users/${userId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ rol: newRole })
+                            });
+                            if (res.ok) {
+                                showToast(`Rol actualizado a "${newRole}"`);
+                                const user = allUsers.find(u => u.id == userId);
+                                if (user) user.rol = newRole;
+                            } else {
+                                const data = await res.json();
+                                showToast(data.error || 'Error al actualizar', true);
+                                e.target.value = e.target.dataset.original;
+                            }
+                        } catch {
+                            showToast('Error de conexión', true);
+                            e.target.value = e.target.dataset.original;
+                        }
+                    });
+                });
+            }
+        }
+
+        /* ── Delete User ── */
+        window.deleteUser = async function(id, nombre) {
+            if (!confirm(`¿Eliminar al usuario "${nombre}"? Esta acción no se puede deshacer.`)) return;
+            try {
+                const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Usuario eliminado');
+                    allUsers = allUsers.filter(u => u.id !== id);
+                    applyFilters();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Error al eliminar', true);
+                }
+            } catch {
+                showToast('Error de conexión', true);
+            }
+        };
+
+        /* ── Utils ── */
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        function showToast(msg, isError) {
+            const toast = document.getElementById('admin-toast');
+            const msgEl = document.getElementById('admin-toast-msg');
+            msgEl.textContent = msg;
+            toast.classList.toggle('error', !!isError);
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        init();
+    });
+    </script>
+</body>
+</html>
