@@ -66,23 +66,33 @@ module.exports = async function (req, res) {
             console.error('[api] error inspecting active handles', e && e.stack ? e.stack : e);
         }
 
-        // If running on Vercel and configured, close the Postgres pool to allow function to exit
+        // If configured to do so, close the Postgres pool to allow the process to exit
         try {
-            if (process.env.VERCEL === '1' && (process.env.PG_CLOSE_AFTER_REQUEST === '1' || typeof process.env.PG_CLOSE_AFTER_REQUEST === 'undefined')) {
+            const shouldClose = (process.env.PG_CLOSE_AFTER_REQUEST !== '0') && (
+                process.env.VERCEL === '1' || process.env.DISABLE_SESSIONS === '1' || process.env.NODE_ENV === 'production' || !!process.env.AWS_REGION || !!process.env.FUNCTIONS_WORKER_RUNTIME
+            );
+            console.log('[api] pg-close-check', { VERCEL: process.env.VERCEL, DISABLE_SESSIONS: process.env.DISABLE_SESSIONS, NODE_ENV: process.env.NODE_ENV, PG_CLOSE_AFTER_REQUEST: process.env.PG_CLOSE_AFTER_REQUEST, shouldClose });
+
+            if (shouldClose) {
                 try {
+                    const beforeHandles = (typeof process._getActiveHandles === 'function') ? process._getActiveHandles().length : null;
                     const pg = require('../lib/pg');
                     if (pg && typeof pg.endPool === 'function') {
                         await pg.endPool();
                         console.log('[api] pg.endPool() called to allow process exit');
-                    } else if (pg && typeof pg.endPool === 'undefined' && typeof pg.endPool === 'undefined') {
-                        // backward compatibility: try endPool or end
-                        if (pg && typeof pg.end === 'function') {
-                            await pg.end();
-                        }
+                    } else if (pg && typeof pg.end === 'function') {
+                        await pg.end();
+                        console.log('[api] pg.end() called to allow process exit');
+                    } else {
+                        console.log('[api] no pg.endPool/end available on require(../lib/pg)');
                     }
+                    const afterHandles = (typeof process._getActiveHandles === 'function') ? process._getActiveHandles().length : null;
+                    console.log('[api] handles-before-after', { beforeHandles, afterHandles, reqId });
                 } catch (e) {
                     console.error('[api] error closing pg pool', e && e.stack ? e.stack : e);
                 }
+            } else {
+                console.log('[api] pg.end skipped', { shouldClose });
             }
         } catch (e) {
             console.error('[api] error in pg close block', e && e.stack ? e.stack : e);

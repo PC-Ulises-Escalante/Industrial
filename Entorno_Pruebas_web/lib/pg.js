@@ -53,7 +53,7 @@ const sanitizedConnectionString = sanitizeConnectionString(connectionString);
 const poolConfig = {
     connectionString: sanitizedConnectionString,
     ssl: buildSslOption(),
-    max: parseInt(process.env.PG_MAX_CLIENTS || '5', 10),
+    max: parseInt(process.env.PG_MAX_CLIENTS || '2', 10),
     idleTimeoutMillis: parseInt(process.env.PG_IDLE_TIMEOUT || '10000', 10),
     connectionTimeoutMillis: parseInt(process.env.PG_CONN_TIMEOUT || '5000', 10),
     allowExitOnIdle: (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1')
