@@ -1,8 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 
-// Determine which database to use
-const usePg = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim());
+// Determine which database to use (accept Supabase's POSTGRES_URL as well)
+const usePg = !!((process.env.DATABASE_URL && process.env.DATABASE_URL.trim()) || (process.env.POSTGRES_URL && process.env.POSTGRES_URL.trim()));
 let pgModule = null;
 let sqliteModule = null;
 let db = null;

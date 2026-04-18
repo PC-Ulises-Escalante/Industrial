@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 const fs = require('fs');
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING || '';
 const rawMode = process.env.PGSSLMODE;
 const pgSslMode = rawMode ? String(rawMode).toLowerCase() : null;
 
