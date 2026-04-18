@@ -37,9 +37,55 @@ module.exports = async function (req, res) {
                     return acc;
                 }, {});
                 console.log(`[api] activeHandles=${handles.length} activeRequests=${requests.length} reqId=${reqId} summary=${JSON.stringify(summary)}`);
+
+                // If there are socket handles, log more info to help identify them
+                if (handles.length > 0) {
+                    for (const h of handles) {
+                        try {
+                            const ctor = (h && h.constructor && h.constructor.name) ? h.constructor.name : typeof h;
+                            if (ctor === 'Socket' || ctor === 'TLSSocket') {
+                                console.log('[api] socket-handle', { ctor, remoteAddress: h.remoteAddress, remotePort: h.remotePort, localAddress: h.localAddress, localPort: h.localPort, connecting: h.connecting });
+                            } else if (ctor === 'Server') {
+                                try {
+                                    const addr = h.address ? h.address() : null;
+                                    console.log('[api] server-handle', { ctor, listening: !!(h.listening || (addr && addr.port)), addr });
+                                } catch (e) {
+                                    console.log('[api] server-handle (no addr)', { ctor });
+                                }
+                            } else {
+                                // generic
+                                console.log('[api] handle', { ctor });
+                            }
+                        } catch (e) {
+                            console.error('[api] error examining handle', e && e.stack ? e.stack : e);
+                        }
+                    }
+                }
             }
         } catch (e) {
             console.error('[api] error inspecting active handles', e && e.stack ? e.stack : e);
+        }
+
+        // If running on Vercel and configured, close the Postgres pool to allow function to exit
+        try {
+            if (process.env.VERCEL === '1' && (process.env.PG_CLOSE_AFTER_REQUEST === '1' || typeof process.env.PG_CLOSE_AFTER_REQUEST === 'undefined')) {
+                try {
+                    const pg = require('../lib/pg');
+                    if (pg && typeof pg.endPool === 'function') {
+                        await pg.endPool();
+                        console.log('[api] pg.endPool() called to allow process exit');
+                    } else if (pg && typeof pg.endPool === 'undefined' && typeof pg.endPool === 'undefined') {
+                        // backward compatibility: try endPool or end
+                        if (pg && typeof pg.end === 'function') {
+                            await pg.end();
+                        }
+                    }
+                } catch (e) {
+                    console.error('[api] error closing pg pool', e && e.stack ? e.stack : e);
+                }
+            }
+        } catch (e) {
+            console.error('[api] error in pg close block', e && e.stack ? e.stack : e);
         }
         return result;
     } catch (err) {

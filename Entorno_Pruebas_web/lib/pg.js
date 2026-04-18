@@ -59,16 +59,36 @@ const poolConfig = {
     allowExitOnIdle: (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1')
 };
 
-const pool = global.__pgPool || new Pool(poolConfig);
-if (!global.__pgPool) global.__pgPool = pool;
+function createPool() {
+    const p = new Pool(poolConfig);
+    p.on('error', (err) => {
+        console.error('Postgres pool error', err && err.message ? err.message : err);
+    });
+    return p;
+}
 
-pool.on('error', (err) => {
-    console.error('Postgres pool error', err && err.message ? err.message : err);
-});
+function getPool() {
+    if (!global.__pgPool) {
+        global.__pgPool = createPool();
+    }
+    return global.__pgPool;
+}
+
+async function endPool() {
+    if (global.__pgPool) {
+        try {
+            await global.__pgPool.end();
+        } catch (err) {
+            console.error('Error ending pg pool', err && err.message ? err.message : err);
+        }
+        try { delete global.__pgPool; } catch (e) { global.__pgPool = undefined; }
+    }
+}
 
 module.exports = {
-    query: (text, params) => pool.query(text, params),
-    getClient: () => pool.connect()
+    query: (text, params) => getPool().query(text, params),
+    getClient: () => getPool().connect(),
+    endPool
 };
 
 function buildSslOption() {
