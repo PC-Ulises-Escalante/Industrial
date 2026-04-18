@@ -14,6 +14,69 @@ const QRCode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
 const jwtLib = require('./lib/jwt');
 const dbLib = require('./lib/db');
+const os = require('os');
+
+// Optional Supabase Storage client. Configure with SUPABASE_URL and SUPABASE_SERVICE_KEY.
+let supabase = null;
+const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'images';
+try {
+    const { createClient } = require('@supabase/supabase-js');
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+        supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+        console.log('Supabase storage enabled for uploads');
+    }
+} catch (e) {
+    supabase = null;
+    console.log('Supabase client not available (dependency missing) or not configured.');
+}
+
+// Helper: intenta guardar una image: primero local, luego Supabase (si está), luego tmpdir.
+async function saveImage(dataUrl, subdir) {
+    const m = String(dataUrl).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+    if (!m) throw new Error('Formato de imagen inválido');
+    const mime = m[1];
+    const base64 = m[2];
+    const ext = mime.split('/')[1].split('+')[0];
+    const filename = Date.now() + '-' + crypto.randomBytes(6).toString('hex') + '.' + ext;
+
+    // Intento 1: guardar localmente en ./Images/<subdir>
+    try {
+        const destDir = path.join(__dirname, 'Images', subdir);
+        fs.mkdirSync(destDir, { recursive: true });
+        const filepath = path.join(destDir, filename);
+        fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
+        return ['Images', subdir, filename].join('/');
+    } catch (err) {
+        console.warn(`Local image save failed for ${subdir}:`, err && err.code ? err.code + ': ' + err.message : err);
+    }
+
+    // Intento 2: subir a Supabase Storage si está configurado
+    if (supabase) {
+        try {
+            const bucketPath = `${subdir}/${filename}`;
+            const buffer = Buffer.from(base64, 'base64');
+            const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(bucketPath, buffer, { contentType: mime, upsert: false });
+            if (error) throw error;
+            const { data: publicUrlData } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(bucketPath);
+            if (publicUrlData && publicUrlData.publicUrl) return publicUrlData.publicUrl;
+            return null;
+        } catch (err) {
+            console.warn(`Supabase upload failed for ${subdir}:`, err && err.message ? err.message : err);
+        }
+    }
+
+    // Intento 3: guardar en tmpdir como último recurso
+    try {
+        const tmpDir = path.join(os.tmpdir(), 'entorno_pruebas_images', subdir);
+        fs.mkdirSync(tmpDir, { recursive: true });
+        const tmpPath = path.join(tmpDir, filename);
+        fs.writeFileSync(tmpPath, Buffer.from(base64, 'base64'));
+        return tmpPath;
+    } catch (err) {
+        console.warn('Fallback to tmpdir failed:', err && err.code ? err.code + ': ' + err.message : err);
+        return null;
+    }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -358,17 +421,13 @@ app.post('/api/ponentes', requireRole('administrador'), async (req, res) => {
 
     let fotoPath = null;
     if (imageData) {
-        const m = String(imageData).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-        if (!m) return res.status(400).json({ error: 'Formato de imagen inválido' });
-        const mime = m[1];
-        const base64 = m[2];
-        const ext = mime.split('/')[1].split('+')[0];
-        const destDir = path.join(__dirname, 'Images', 'ponentes');
-        if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-        const filename = Date.now() + '-' + crypto.randomBytes(6).toString('hex') + '.' + ext;
-        const filepath = path.join(destDir, filename);
-        fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
-        fotoPath = ['Images', 'ponentes', filename].join('/');
+        try {
+            fotoPath = await saveImage(imageData, 'ponentes');
+        } catch (err) {
+            if (err && err.message === 'Formato de imagen inválido') return res.status(400).json({ error: 'Formato de imagen inválido' });
+            console.warn('No se pudo guardar la imagen de ponente:', err && err.message ? err.message : err);
+            fotoPath = null;
+        }
     }
 
     try {
@@ -409,17 +468,13 @@ app.post('/api/conferencias', requireRole('administrador'), async (req, res) => 
 
     let fotoEventoPath = null;
     if (imageData) {
-        const m = String(imageData).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-        if (!m) return res.status(400).json({ error: 'Formato de imagen inválido' });
-        const mime = m[1];
-        const base64 = m[2];
-        const ext = mime.split('/')[1].split('+')[0];
-        const destDir = path.join(__dirname, 'Images', 'eventos');
-        if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-        const filename = Date.now() + '-' + crypto.randomBytes(6).toString('hex') + '.' + ext;
-        const filepath = path.join(destDir, filename);
-        fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
-        fotoEventoPath = ['Images', 'eventos', filename].join('/');
+        try {
+            fotoEventoPath = await saveImage(imageData, 'eventos');
+        } catch (err) {
+            if (err && err.message === 'Formato de imagen inválido') return res.status(400).json({ error: 'Formato de imagen inválido' });
+            console.warn('No se pudo guardar la imagen del evento:', err && err.message ? err.message : err);
+            fotoEventoPath = null;
+        }
     }
 
     try {
