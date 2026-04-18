@@ -110,6 +110,42 @@ module.exports = async function (req, res) {
                         console.error('[api] error destroying server sockets', e && e.stack ? e.stack : e);
                     }
 
+                    // Aggressively close any Server handles and destroy local Sockets discovered via process._getActiveHandles()
+                    try {
+                        if (typeof process._getActiveHandles === 'function') {
+                            const handles = process._getActiveHandles();
+                            for (const h of handles) {
+                                try {
+                                    const ctor = (h && h.constructor && h.constructor.name) ? h.constructor.name : typeof h;
+                                    if (ctor === 'Server' && typeof h.close === 'function') {
+                                        try {
+                                            console.log('[api] closing Server handle', { addr: (typeof h.address === 'function') ? h.address() : null });
+                                            await new Promise((resolve) => {
+                                                try { h.close(() => resolve()); }
+                                                catch (e) { resolve(); }
+                                            });
+                                            console.log('[api] closed Server handle');
+                                        } catch (e) {
+                                            console.error('[api] error closing Server handle', e && e.stack ? e.stack : e);
+                                        }
+                                    } else if ((ctor === 'Socket' || ctor === 'TLSSocket') && typeof h.destroy === 'function') {
+                                        // Only destroy loopback/local sockets to avoid terminating remote connections unexpectedly
+                                        try {
+                                            const local = h.localAddress || '';
+                                            if (!local || local === '127.0.0.1' || local === '::1') {
+                                                try { h.destroy(); } catch (e) { /* ignore */ }
+                                            }
+                                        } catch (e) { /* ignore */ }
+                                    }
+                                } catch (e) {
+                                    /* ignore per-handle errors */
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[api] error closing handles from _getActiveHandles', e && e.stack ? e.stack : e);
+                    }
+
                     const pg = require('../lib/pg');
                     if (pg && typeof pg.endPool === 'function') {
                         await pg.endPool();
