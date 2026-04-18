@@ -3,6 +3,16 @@ const { app, initDb } = require('../server');
 
 // Create the serverless handler once and reuse it across invocations
 const handler = serverless(app);
+// Track sockets created by the internal http Server (if any) so we can destroy them
+const activeServerSockets = new Set();
+if (handler && handler.server && !handler.server.__copilot_socket_tracker) {
+    handler.server.__copilot_socket_tracker = true;
+    handler.server.on('connection', (socket) => {
+        activeServerSockets.add(socket);
+        socket.on('close', () => activeServerSockets.delete(socket));
+        try { socket.unref(); } catch (e) { /* ignore */ }
+    });
+}
 let initPromise = null;
 let inited = false;
 
@@ -76,6 +86,30 @@ module.exports = async function (req, res) {
             if (shouldClose) {
                 try {
                     const beforeHandles = (typeof process._getActiveHandles === 'function') ? process._getActiveHandles().length : null;
+
+                    // Close the internal http server created by serverless-http (if present)
+                    try {
+                        if (handler && handler.server && typeof handler.server.close === 'function') {
+                            console.log('[api] closing handler.server to free listening socket');
+                            await new Promise((resolve) => handler.server.close(() => resolve()));
+                            console.log('[api] handler.server.close completed');
+                        }
+                    } catch (e) {
+                        console.error('[api] error closing handler.server', e && e.stack ? e.stack : e);
+                    }
+
+                    // Destroy any tracked server sockets to ensure they don't keep the process alive
+                    try {
+                        if (activeServerSockets && activeServerSockets.size > 0) {
+                            console.log('[api] destroying activeServerSockets', activeServerSockets.size);
+                            for (const s of Array.from(activeServerSockets)) {
+                                try { s.destroy(); } catch (e) { /* ignore */ }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[api] error destroying server sockets', e && e.stack ? e.stack : e);
+                    }
+
                     const pg = require('../lib/pg');
                     if (pg && typeof pg.endPool === 'function') {
                         await pg.endPool();
@@ -86,6 +120,7 @@ module.exports = async function (req, res) {
                     } else {
                         console.log('[api] no pg.endPool/end available on require(../lib/pg)');
                     }
+
                     const afterHandles = (typeof process._getActiveHandles === 'function') ? process._getActiveHandles().length : null;
                     console.log('[api] handles-before-after', { beforeHandles, afterHandles, reqId });
                 } catch (e) {
