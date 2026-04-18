@@ -770,3 +770,19 @@
     text-transform: none;
     line-height: 1.45;
 }
+
+/* Fix: prevent text from overflowing card boundaries in flex layouts */
+.eje-card > div {
+    min-width: 0;
+}
+
+.eje-title,
+.eje-desc,
+.theme-mini-card span,
+.speaker-name,
+.speaker-role,
+.schedule-event,
+.timeline-list li {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}

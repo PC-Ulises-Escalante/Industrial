@@ -94,28 +94,8 @@ module.exports = async function (req, res) {
                 try {
                     const beforeHandles = (typeof process._getActiveHandles === 'function') ? process._getActiveHandles().length : null;
 
-                    // Close the internal http server created by serverless-http (if present)
-                    try {
-                        if (handler && handler.server && typeof handler.server.close === 'function') {
-                            console.log('[api] closing handler.server to free listening socket');
-                            await new Promise((resolve) => handler.server.close(() => resolve()));
-                            console.log('[api] handler.server.close completed');
-                        }
-                    } catch (e) {
-                        console.error('[api] error closing handler.server', e && e.stack ? e.stack : e);
-                    }
-
-                    // Destroy any tracked server sockets to ensure they don't keep the process alive
-                    try {
-                        if (activeServerSockets && activeServerSockets.size > 0) {
-                            console.log('[api] destroying activeServerSockets', activeServerSockets.size);
-                            for (const s of Array.from(activeServerSockets)) {
-                                try { s.destroy(); } catch (e) { /* ignore */ }
-                            }
-                        }
-                    } catch (e) {
-                        console.error('[api] error destroying server sockets', e && e.stack ? e.stack : e);
-                    }
+                    // No serverless-http internal server to close (we invoke `app` directly).
+                    // If sockets remain, we'll inspect and close them below using process._getActiveHandles().
 
                     // Aggressively close any Server handles and destroy local Sockets discovered via process._getActiveHandles()
                     try {

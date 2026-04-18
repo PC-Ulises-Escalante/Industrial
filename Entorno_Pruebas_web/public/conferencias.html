@@ -94,7 +94,86 @@
     <!-- CONFERENCES GRID -->
     <section class="conferencias-grid-section">
         <div class="conferencias-grid" id="conferencias-grid">
-            <div class="admin-empty">Cargando conferencias...</div>
+            <!-- Static fallback cards (will be preserved if the API is unavailable). Photos se subirán desde admin. -->
+            <div class="conferencia-card glass">
+                <div class="conferencia-header">
+                    <h3 class="conferencia-title">Seguridad CIBERNÉTICA</h3>
+                    <span class="conferencia-fecha">Lunes — 8:30 am & 7:00 pm</span>
+                </div>
+                <p class="conferencia-lugar">📍 Principal</p>
+                <div class="conferencia-ponente">
+                    <img src="Eng.webp" alt="Dr. Ernesto Ibarra Sánchez" class="ponente-avatar">
+                    <div class="ponente-info">
+                        <h4>Dr. Ernesto Ibarra Sánchez</h4>
+                        <p>Fundador y Presidente AMCID. Profesor, conferencista, asesor y autor en temas Sociedad‑Derecho‑TIC‑innovación.</p>
+                    </div>
+                </div>
+                <p class="conferencia-desc">Licenciado y maestro en Derecho por la UNAM, con Maestría en Ciencias Jurídicas y Doctorado en Derecho por la Universidad Panamericana. Autor en temas como Ciberseguridad, Privacidad, Derecho Digital y Legaltech.</p>
+                <div class="conferencia-actions">
+                    <span class="inscritos-badge">—</span>
+                    <button class="btn-inscribirse" data-id="static-1">Inscribirse</button>
+                </div>
+            </div>
+
+            <div class="conferencia-card glass">
+                <div class="conferencia-header">
+                    <h3 class="conferencia-title">CVU - EFECTIVO</h3>
+                    <span class="conferencia-fecha">Lunes — 11:00 am & 4:00 pm</span>
+                </div>
+                <p class="conferencia-lugar">📍 Principal</p>
+                <div class="conferencia-ponente">
+                    <img src="Eng.webp" alt="Dra. Ruth Vargas Leyva" class="ponente-avatar">
+                    <div class="ponente-info">
+                        <h4>Dra. Ruth Vargas Leyva</h4>
+                        <p>Doctora en Educación; maestra en Medición, Evaluación e Investigación Educativa; licenciada en Economía.</p>
+                    </div>
+                </div>
+                <p class="conferencia-desc">Reconocimientos: Medalla “Adolfo López Mateos” al Mérito Académico (1994); Premio ANUIES a la mejor tesis doctoral en temas de educación superior (1998).</p>
+                <div class="conferencia-actions">
+                    <span class="inscritos-badge">—</span>
+                    <button class="btn-inscribirse" data-id="static-2">Inscribirse</button>
+                </div>
+            </div>
+
+            <div class="conferencia-card glass">
+                <div class="conferencia-header">
+                    <h3 class="conferencia-title">IA- de vanguardia</h3>
+                    <span class="conferencia-fecha">Miércoles — 6:30 pm</span>
+                </div>
+                <p class="conferencia-lugar">📍 Sala de conferencias</p>
+                <div class="conferencia-ponente">
+                    <img src="Eng.webp" alt="Dr. Mauricio Alonso Sánchez Herrera" class="ponente-avatar">
+                    <div class="ponente-info">
+                        <h4>Dr. Mauricio Alonso Sánchez Herrera</h4>
+                        <p>Doctor en Ciencias de la Computación. Especialista en Ciencia de Datos, sistemas difusos y sistemas inteligentes embebidos.</p>
+                    </div>
+                </div>
+                <p class="conferencia-desc">La IA en la industria revoluciona la manufactura mediante aprendizaje automático, visión artificial y análisis de datos para mantenimiento predictivo, control de calidad y optimización de la cadena de suministro.</p>
+                <div class="conferencia-actions">
+                    <span class="inscritos-badge">—</span>
+                    <button class="btn-inscribirse" data-id="static-3">Inscribirse</button>
+                </div>
+            </div>
+
+            <div class="conferencia-card glass">
+                <div class="conferencia-header">
+                    <h3 class="conferencia-title">CIBERSEGURIDAD Y BUSQUEDA</h3>
+                    <span class="conferencia-fecha">Sábado — 9:00 am</span>
+                </div>
+                <p class="conferencia-lugar">📍 Comandancia Regional Sur</p>
+                <div class="conferencia-ponente">
+                    <img src="Eng.webp" alt="Policía Cibernética" class="ponente-avatar">
+                    <div class="ponente-info">
+                        <h4>Policía Cibernética</h4>
+                        <p>Contacto: (664) 650-04-47 • ciberneticasspcm@tijuana.gob.mx</p>
+                    </div>
+                </div>
+                <p class="conferencia-desc">Integra tecnología avanzada y agentes especializados para la prevención de delitos digitales y la localización rápida de personas desaparecidas. Coordinación interinstitucional desde la Dirección de la Policía Cibernética de Tijuana.</p>
+                <div class="conferencia-actions">
+                    <span class="inscritos-badge">—</span>
+                    <button class="btn-inscribirse" data-id="static-4">Inscribirse</button>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -162,17 +241,46 @@
                 return d.innerHTML;
             }
 
+            function attachInscripcionButtons() {
+                document.querySelectorAll('.btn-inscribirse:not(.btn-inscrito)').forEach(btn => {
+                    if (btn.dataset.listenerAttached) return;
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-id');
+                        try {
+                            const res = await fetch('/api/conferencias/inscribir', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ conferencia_id: id })
+                            });
+                            if (res.ok) {
+                                btn.textContent = 'Ya inscrito';
+                                btn.classList.add('btn-inscrito');
+                                btn.disabled = true;
+                                alert('Te has inscrito exitosamente a la conferencia.');
+                                const badge = btn.previousElementSibling;
+                                const current = parseInt((badge && badge.textContent) || '0') || 0;
+                                if (badge) badge.textContent = (current + 1) + ' inscritos';
+                            } else {
+                                const err = await res.json().catch(() => ({}));
+                                alert(err.error || 'Error al inscribirse');
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert('Error de conexión');
+                        }
+                    });
+                    btn.dataset.listenerAttached = '1';
+                });
+            }
+
             async function loadConferencias() {
                 const grid = document.getElementById('conferencias-grid');
                 if (!grid) return;
                 try {
                     const res = await fetch('/api/conferencias');
-                    if (!res.ok) { grid.innerHTML = '<div class="admin-empty">No fue posible cargar conferencias</div>'; return; }
+                    if (!res.ok) { console.warn('No fue posible cargar conferencias'); attachInscripcionButtons(); return; }
                     const conferencias = await res.json();
-                    if (!Array.isArray(conferencias) || conferencias.length === 0) {
-                        grid.innerHTML = '<div class="admin-empty">No hay conferencias programadas aún</div>';
-                        return;
-                    }
+                    if (!Array.isArray(conferencias) || conferencias.length === 0) { console.warn('No hay conferencias programadas'); attachInscripcionButtons(); return; }
 
                     // Primero obtener mis inscripciones para marcar las ya inscritas
                     let misInscripciones = [];
@@ -218,35 +326,8 @@
                         `;
                     }).join('');
 
-                    // Agregar event listeners a los botones
-                    document.querySelectorAll('.btn-inscribirse:not(.btn-inscrito)').forEach(btn => {
-                        btn.addEventListener('click', async () => {
-                            const id = btn.getAttribute('data-id');
-                            try {
-                                const res = await fetch('/api/conferencias/inscribir', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ conferencia_id: id })
-                                });
-                                if (res.ok) {
-                                    btn.textContent = 'Ya inscrito';
-                                    btn.classList.add('btn-inscrito');
-                                    btn.disabled = true;
-                                    alert('Te has inscrito exitosamente a la conferencia.');
-                                    // Actualizar contador
-                                    const badge = btn.previousElementSibling;
-                                    const count = parseInt(badge.textContent) + 1;
-                                    badge.textContent = count + ' inscritos';
-                                } else {
-                                    const err = await res.json().catch(() => ({}));
-                                    alert(err.error || 'Error al inscribirse');
-                                }
-                            } catch (err) {
-                                console.error(err);
-                                alert('Error de conexión');
-                            }
-                        });
-                    });
+                    // Attach listeners for dynamic buttons
+                    attachInscripcionButtons();
 
                     // Fade-in animation
                     const cards = document.querySelectorAll(".conferencia-card");
@@ -269,7 +350,8 @@
                     }
                 } catch (err) {
                     console.error('Error loading conferencias', err);
-                    grid.innerHTML = '<div class="admin-empty">Error al cargar conferencias</div>';
+                    console.warn('Usando contenido estático si existe');
+                    attachInscripcionButtons();
                 }
             }
 

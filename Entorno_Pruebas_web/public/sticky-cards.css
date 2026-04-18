@@ -34,6 +34,7 @@
 .card .col {
     flex: 1;
     height: 110%;
+    min-width: 0;
 }
 
 .card .col:nth-child(1) {
