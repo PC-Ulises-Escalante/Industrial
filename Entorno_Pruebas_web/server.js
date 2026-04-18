@@ -160,8 +160,19 @@ app.post('/api/login', async (req, res) => {
         }
 
         const bcryptStart = Date.now();
-        const match = bcrypt.compareSync(password, user.password);
-        console.log('[login] bcrypt.compareSync done', { durationMs: Date.now() - bcryptStart, match });
+        let match;
+        try {
+            match = await new Promise((resolve, reject) => {
+                bcrypt.compare(password, user.password, (err, ok) => {
+                    if (err) return reject(err);
+                    resolve(ok);
+                });
+            });
+            console.log('[login] bcrypt.compare done', { durationMs: Date.now() - bcryptStart, match });
+        } catch (err) {
+            console.error('[login] bcrypt.compare error', err && err.stack ? err.stack : err);
+            return res.status(500).json({ error: 'Error interno' });
+        }
 
         if (!match) {
             console.log('[login] password mismatch for user', user.id);
