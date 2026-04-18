@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+const { Pool, Client } = require('pg');
 const fs = require('fs');
 
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING || '';
@@ -50,6 +50,10 @@ function sanitizeConnectionString(cs) {
 
 const sanitizedConnectionString = sanitizeConnectionString(connectionString);
 
+// Decide whether to use a long-lived Pool or create a Client per request.
+// Default: on Vercel prefer per-request Client to avoid lingering sockets unless explicitly overridden.
+const usePool = !((process.env.VERCEL === '1' || process.env.PG_CLOSE_AFTER_REQUEST === '1') && process.env.PG_USE_POOL !== '1');
+
 const poolConfig = {
     connectionString: sanitizedConnectionString,
     ssl: buildSslOption(),
@@ -68,28 +72,56 @@ function createPool() {
 }
 
 function getPool() {
-    if (!global.__pgPool) {
-        global.__pgPool = createPool();
-    }
+    if (!global.__pgPool) global.__pgPool = createPool();
     return global.__pgPool;
 }
 
 async function endPool() {
-    if (global.__pgPool) {
-        try {
-            await global.__pgPool.end();
-        } catch (err) {
-            console.error('Error ending pg pool', err && err.message ? err.message : err);
+    if (usePool) {
+        if (global.__pgPool) {
+            try { await global.__pgPool.end(); } catch (err) { console.error('Error ending pg pool', err && err.message ? err.message : err); }
+            try { delete global.__pgPool; } catch (e) { global.__pgPool = undefined; }
         }
-        try { delete global.__pgPool; } catch (e) { global.__pgPool = undefined; }
+    } else {
+        // no-op for per-request clients
+        return;
     }
 }
 
-module.exports = {
-    query: (text, params) => getPool().query(text, params),
-    getClient: () => getPool().connect(),
-    endPool
-};
+// Helper to convert '?' placeholders to $1, $2 for pg
+function convertPlaceholders(sql) {
+    let i = 1;
+    return sql.replace(/\?/g, () => '$' + (i++));
+}
+
+async function query(text, params) {
+    if (!usePool) {
+        const c = new Client({ connectionString: sanitizedConnectionString, ssl: buildSslOption() });
+        await c.connect();
+        try {
+            return await c.query(text, params || []);
+        } finally {
+            try { await c.end(); } catch (e) { /* ignore */ }
+        }
+    }
+    return getPool().query(text, params || []);
+}
+
+async function getClient() {
+    if (!usePool) {
+        const client = new Client({ connectionString: sanitizedConnectionString, ssl: buildSslOption() });
+        await client.connect();
+        client.queryWithPlaceholders = (sql, params) => {
+            const text = convertPlaceholders(sql);
+            return client.query(text, params || []);
+        };
+        client.release = async () => { try { await client.end(); } catch (e) { /* ignore */ } };
+        return client;
+    }
+    return getPool().connect();
+}
+
+module.exports = { query, getClient, endPool };
 
 function buildSslOption() {
     const opt = resolveSslOption(); // existing resolve
