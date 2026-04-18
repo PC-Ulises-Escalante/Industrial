@@ -25,15 +25,18 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 // Session middleware: disable in serverless environments by setting DISABLE_SESSIONS=1
-if (!process.env.DISABLE_SESSIONS || process.env.DISABLE_SESSIONS === 'false') {
+// Auto-disable sessions when running on Vercel (serverless) to avoid MemoryStore timers
+const disableSessions = (process.env.DISABLE_SESSIONS === '1') || (process.env.VERCEL === '1') || (process.env.NODE_ENV === 'production' && process.env.DISABLE_SESSIONS !== '0');
+if (!disableSessions) {
     app.use(session({
         secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
         resave: false,
         saveUninitialized: false,
         cookie: { maxAge: 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'lax' }
     }));
+    console.log('Sessions ENABLED');
 } else {
-    console.log('Sessions are disabled (DISABLE_SESSIONS=1). Using JWT-only auth.');
+    console.log('Sessions are disabled (serverless/VERCEL or DISABLE_SESSIONS=1). Using JWT-only auth.');
 }
 
 // Request logging middleware to help debug long-running requests
