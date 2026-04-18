@@ -1,16 +1,23 @@
-const serverless = require('serverless-http');
 const { app, initDb } = require('../server');
 
-// Create the serverless handler once and reuse it across invocations
-const handler = serverless(app);
-// Track sockets created by the internal http Server (if any) so we can destroy them
-const activeServerSockets = new Set();
-if (handler && handler.server && !handler.server.__copilot_socket_tracker) {
-    handler.server.__copilot_socket_tracker = true;
-    handler.server.on('connection', (socket) => {
-        activeServerSockets.add(socket);
-        socket.on('close', () => activeServerSockets.delete(socket));
-        try { socket.unref(); } catch (e) { /* ignore */ }
+// In serverless we invoke the Express `app` directly (no server) to avoid internal listening sockets
+async function invokeAppDirect(req, res) {
+    return new Promise((resolve, reject) => {
+        let finished = false;
+        const onFinish = () => {
+            if (finished) return;
+            finished = true;
+            resolve();
+        };
+        res.once('finish', onFinish);
+        res.once('close', onFinish);
+        try {
+            app(req, res);
+        } catch (err) {
+            reject(err);
+        }
+        // Safety: if the response hasn't finished within 25s, resolve to allow cleanup (prevents stuck promises)
+        setTimeout(() => { if (!finished) { finished = true; resolve(); } }, 25000);
     });
 }
 let initPromise = null;
@@ -33,7 +40,7 @@ module.exports = async function (req, res) {
             await initPromise;
         }
         console.log('[api] forwarding to handler');
-        const result = await handler(req, res);
+        await invokeAppDirect(req, res);
         console.log(`[api] handler completed in ${Date.now() - start}ms reqId=${reqId}`);
 
         // Diagnostic: inspect active handles/requests to detect handles preventing process exit
