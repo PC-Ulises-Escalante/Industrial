@@ -25,6 +25,22 @@ module.exports = async function (req, res) {
         console.log('[api] forwarding to handler');
         const result = await handler(req, res);
         console.log(`[api] handler completed in ${Date.now() - start}ms reqId=${reqId}`);
+
+        // Diagnostic: inspect active handles/requests to detect handles preventing process exit
+        try {
+            if (typeof process._getActiveHandles === 'function') {
+                const handles = process._getActiveHandles();
+                const requests = (typeof process._getActiveRequests === 'function') ? process._getActiveRequests() : [];
+                const summary = handles.reduce((acc, h) => {
+                    const name = (h && h.constructor && h.constructor.name) ? h.constructor.name : typeof h;
+                    acc[name] = (acc[name] || 0) + 1;
+                    return acc;
+                }, {});
+                console.log(`[api] activeHandles=${handles.length} activeRequests=${requests.length} reqId=${reqId} summary=${JSON.stringify(summary)}`);
+            }
+        } catch (e) {
+            console.error('[api] error inspecting active handles', e && e.stack ? e.stack : e);
+        }
         return result;
     } catch (err) {
         console.error('[api] Error inicializando la app:', err && err.stack ? err.stack : err);
