@@ -140,22 +140,51 @@ function requireRole(...roles) {
    ══════════════════════════════════════════ */
 
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
+    const start = Date.now();
+    const { email, password } = req.body || {};
+    console.log('[login] start', { ip: req.ip, email: email ? email.toLowerCase() : null });
     if (!email || !password) {
+        console.log('[login] missing email or password');
         return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
-    const user = await qOne('SELECT * FROM users WHERE email = ?', [email.trim().toLowerCase()]);
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-    const sessionUser = { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol };
-    if (req.session) req.session.user = sessionUser;
+
     try {
-        const token = jwtLib.sign(sessionUser);
-        res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-        res.json({ user: sessionUser, token });
+        const lookupStart = Date.now();
+        console.log('[login] lookup user start');
+        const user = await qOne('SELECT * FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+        console.log('[login] lookup user done', { durationMs: Date.now() - lookupStart, found: !!user, userId: user ? user.id : null });
+
+        if (!user) {
+            console.log('[login] user not found');
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
+        const bcryptStart = Date.now();
+        const match = bcrypt.compareSync(password, user.password);
+        console.log('[login] bcrypt.compareSync done', { durationMs: Date.now() - bcryptStart, match });
+
+        if (!match) {
+            console.log('[login] password mismatch for user', user.id);
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
+        const sessionUser = { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol };
+        if (req.session) req.session.user = sessionUser;
+
+        try {
+            const signStart = Date.now();
+            const token = jwtLib.sign(sessionUser);
+            console.log('[login] token signed', { durationMs: Date.now() - signStart });
+            res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
+            res.json({ user: sessionUser, token });
+            console.log('[login] success', { userId: user.id, durationMs: Date.now() - start });
+        } catch (err) {
+            console.error('[login] token sign error', err && err.stack ? err.stack : err);
+            res.json({ user: sessionUser });
+        }
     } catch (err) {
-        res.json({ user: sessionUser });
+        console.error('[login] unexpected error', err && err.stack ? err.stack : err);
+        res.status(500).json({ error: 'Error interno' });
     }
 });
 
@@ -174,7 +203,15 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/session', (req, res) => {
-    res.json({ user: req.session.user || req.jwtUser || null });
+    try {
+        console.log('[session] start', { ip: req.ip, hasSession: !!(req.session && req.session.user), hasJwt: !!req.jwtUser });
+        const user = req.session && req.session.user ? req.session.user : (req.jwtUser || null);
+        res.json({ user });
+        console.log('[session] responded', { userId: user ? user.id : null });
+    } catch (err) {
+        console.error('[session] error', err && err.stack ? err.stack : err);
+        res.status(500).json({ error: 'Error interno' });
+    }
 });
 
 app.post('/api/register', async (req, res) => {
