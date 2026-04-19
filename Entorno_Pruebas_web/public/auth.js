@@ -7,11 +7,24 @@ console.debug('[auth.js] loaded');
     const isSubpage = window.location.pathname.includes('/Paginas/');
     const paginasPath = isSubpage ? '.' : 'Paginas';
 
+    /* ── Small helper to include credentials and optional bearer token ── */
+    function apiFetch(url, opts = {}) {
+        opts = Object.assign({}, opts);
+        // ensure cookies are sent for same-origin requests
+        if (!opts.credentials) opts.credentials = 'same-origin';
+        opts.headers = opts.headers || {};
+        try {
+            const token = localStorage.getItem('token');
+            if (token && !opts.headers.Authorization) opts.headers.Authorization = 'Bearer ' + token;
+        } catch (e) { /* ignore localStorage errors */ }
+        return fetch(url, opts);
+    }
+
     /* ── Check session on load ── */
     async function checkSession() {
         try {
             console.debug('[auth.js] checkSession: fetching /api/session');
-            const res = await fetch('/api/session');
+            const res = await apiFetch('/api/session');
             const data = await res.json();
             console.debug('[auth.js] checkSession result:', data);
             updateNavbar(data.user);
@@ -194,7 +207,7 @@ console.debug('[auth.js] loaded');
 
         try {
             console.debug('[auth.js] handleLogin: sending login for', email);
-            const res = await fetch('/api/login', {
+            const res = await apiFetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -207,6 +220,9 @@ console.debug('[auth.js] loaded');
                 errorEl.style.display = 'block';
                 return;
             }
+
+            // Save token (if provided) as a fallback for API calls when cookies aren't available
+            try { if (data && data.token) localStorage.setItem('token', data.token); } catch (e) { }
 
             hideLoginModal();
             // Redirect admin to dashboard, others to home
@@ -225,8 +241,9 @@ console.debug('[auth.js] loaded');
     /* ── Logout handler ── */
     async function handleLogout() {
         try {
-            await fetch('/api/logout', { method: 'POST' });
+            await apiFetch('/api/logout', { method: 'POST' });
         } catch { /* ignore */ }
+        try { localStorage.removeItem('token'); } catch (e) { }
         window.location.href = 'index.html';
     }
 

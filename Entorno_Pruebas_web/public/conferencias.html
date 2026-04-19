@@ -161,7 +161,7 @@
                     btn.addEventListener('click', async () => {
                         const id = btn.getAttribute('data-id');
                         try {
-                            const res = await fetch('/api/conferencias/inscribir', {
+                            const res = await apiFetch('/api/conferencias/inscribir', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ conferencia_id: id })
@@ -191,7 +191,7 @@
                 const grid = document.getElementById('conferencias-grid');
                 if (!grid) return;
                 try {
-                    const res = await fetch('/api/conferencias');
+                    const res = await apiFetch('/api/conferencias');
                     if (!res.ok) { console.warn('No fue posible cargar conferencias'); attachInscripcionButtons(); return; }
                     const conferencias = await res.json();
                     if (!Array.isArray(conferencias) || conferencias.length === 0) { console.warn('No hay conferencias programadas'); attachInscripcionButtons(); return; }
@@ -199,11 +199,11 @@
                     // Primero obtener mis inscripciones para marcar las ya inscritas
                     let misInscripciones = [];
                     try {
-                        const sessionRes = await fetch('/api/session');
+                        const sessionRes = await apiFetch('/api/session');
                         if (sessionRes.ok) {
                             const session = await sessionRes.json();
                             if (session.user) {
-                                const inscRes = await fetch(`/api/conferencias/inscripciones/${session.user.id}`);
+                                const inscRes = await apiFetch(`/api/conferencias/inscripciones/${session.user.id}`);
                                 if (inscRes.ok) {
                                     misInscripciones = await inscRes.json();
                                 }
@@ -275,7 +275,7 @@
             /* ── Admin: show add button and modal ── */
             (async function initAdminUI(){
                 try {
-                    const s = await fetch('/api/session');
+                    const s = await apiFetch('/api/session');
                     if (!s.ok) return;
                     const js = await s.json();
                     if (!js.user || js.user.rol !== 'administrador') return;
@@ -419,7 +419,7 @@
                         }
                         
                         try {
-                            const res = await fetch('/api/conferencias', {
+                            const res = await apiFetch('/api/conferencias', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)

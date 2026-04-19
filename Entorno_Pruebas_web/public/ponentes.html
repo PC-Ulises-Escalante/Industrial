@@ -156,7 +156,7 @@
                 const grid = document.getElementById('ponentes-grid');
                 if (!grid) return;
                 try {
-                    const res = await fetch('/api/ponentes');
+                    const res = await apiFetch('/api/ponentes');
                     if (!res.ok) { grid.innerHTML = '<div class="admin-empty">No fue posible cargar ponentes</div>'; return; }
                     const ponentes = await res.json();
                     if (!Array.isArray(ponentes) || ponentes.length === 0) {
@@ -216,7 +216,7 @@
             /* ── Admin: show add button and modal ── */
             (async function initAdminUI(){
                 try {
-                    const s = await fetch('/api/session');
+                    const s = await apiFetch('/api/session');
                     if (!s.ok) return;
                     const js = await s.json();
                     if (!js.user || js.user.rol !== 'administrador') return;
@@ -343,7 +343,7 @@
                         };
                         if (!payload.nombre) return alert('El nombre es requerido');
                         try {
-                            const res = await fetch('/api/ponentes', {
+                            const res = await apiFetch('/api/ponentes', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)

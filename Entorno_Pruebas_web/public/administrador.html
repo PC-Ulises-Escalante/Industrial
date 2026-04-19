@@ -269,7 +269,7 @@
 
         /* ── Load Stats & Charts ── */
         try {
-            const res = await fetch('/api/stats');
+            const res = await apiFetch('/api/stats');
             if (!res.ok) return;
             const stats = await res.json();
 
@@ -522,7 +522,7 @@
             };
 
             try {
-                const res = await fetch('/api/ponentes', {
+                const res = await apiFetch('/api/ponentes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
