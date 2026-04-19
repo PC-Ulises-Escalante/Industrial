@@ -73,6 +73,12 @@
     background: #fff;
 }
 
+/* Hide mobile-only elements on desktop. These are created dynamically by auth.js
+   and only styled inside the @media block below. Without this they render visibly. */
+.nav-hamburger { display: none; }
+.nav-drawer { display: none; }
+.nav-drawer-strip { display: none; }
+
 /* Mobile adjustments: reduce spacing and sizes so navbar fits small screens */
 @media (max-width: 640px) {
     .navbar {

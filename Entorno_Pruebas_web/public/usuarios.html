@@ -51,7 +51,7 @@
                 <option value="">Todos los roles</option>
                 <option value="alumno">Alumnos</option>
                 <option value="invitado">Invitados</option>
-                <option value="staff">Staff</option>
+                <option value="maestro">Maestros</option>
                 <option value="administrador">Administradores</option>
             </select>
             <span class="filter-count" id="filter-count">0 usuarios</span>
@@ -63,21 +63,22 @@
         <div class="admin-table-wrapper">
             <table class="admin-table">
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Núm. Control</th>
-                        <th>Semestre</th>
-                        <th>Edad</th>
-                        <th>Registro</th>
-                        <th>Acciones</th>
-                    </tr>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Horario</th>
+                            <th>Núm. Control</th>
+                            <th>Semestre</th>
+                            <th>Edad</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
                 </thead>
                 <tbody id="users-table-body">
                     <tr>
-                        <td colspan="9" class="admin-empty">Cargando usuarios...</td>
+                        <td colspan="10" class="admin-empty">Cargando usuarios...</td>
                     </tr>
                 </tbody>
             </table>
@@ -197,7 +198,7 @@
             const tbody = document.getElementById('users-table-body');
             if (users.length === 0) {
                 tbody.innerHTML = `
-                    <tr><td colspan="9" class="admin-empty">
+                    <tr><td colspan="10" class="admin-empty">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         No se encontraron usuarios
                     </td></tr>`;
@@ -214,12 +215,13 @@
                             ? `<select class="role-edit-select" data-id="${u.id}" data-original="${u.rol}">
                                 <option value="alumno" ${u.rol==='alumno'?'selected':''}>Alumno</option>
                                 <option value="invitado" ${u.rol==='invitado'?'selected':''}>Invitado</option>
-                                <option value="staff" ${u.rol==='staff'?'selected':''}>Staff</option>
+                                <option value="maestro" ${u.rol==='maestro'?'selected':''}>Maestro</option>
                                 <option value="administrador" ${u.rol==='administrador'?'selected':''}>Admin</option>
                                </select>`
                             : `<span class="role-badge role-badge-${u.rol}">${u.rol}</span>`
                         }
                     </td>
+                    <td>${u.horario ? (u.horario === 'vespertino' ? 'Vespertino' : (u.horario === 'matutino' ? 'Matutino' : escapeHtml(u.horario))) : '—'}</td>
                     <td>${u.numero_control || '—'}</td>
                     <td>${u.semestre || '—'}</td>
                     <td>${u.edad || '—'}</td>
