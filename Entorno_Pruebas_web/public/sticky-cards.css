@@ -15,7 +15,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    height: 60%;
+    height: 80%;
     width: 65%;
     display: flex;
     justify-content: center;
@@ -33,15 +33,18 @@
 
 .card .col {
     flex: 1;
-    height: 110%;
+    height: 100%;
     min-width: 0;
+    overflow: hidden;
 }
 
 .card .col:nth-child(1) {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 0.5rem;
+    overflow-y: auto;
+    gap: 0.75rem;
 }
 
 .card .col:nth-child(2) {
@@ -51,11 +54,12 @@
 
 .card h1 {
     font-family: 'Sora', 'Inter', system-ui, sans-serif;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
-    line-height: 1;
+    line-height: 1.1;
     text-transform: uppercase;
     letter-spacing: -0.02em;
+    flex-shrink: 0;
 }
 
 .card h3 {
@@ -67,8 +71,8 @@
 }
 
 .card .card-text {
-    font-size: 0.95rem;
-    line-height: 1.7;
+    font-size: 0.88rem;
+    line-height: 1.65;
     color: var(--slate-300);
     text-transform: none;
 }
@@ -109,14 +113,17 @@
     background: var(--card-1);
     z-index: 5;
 }
+
 .card#card-2 {
     background: var(--card-2);
     z-index: 4;
 }
+
 .card#card-3 {
     background: var(--card-3);
     z-index: 3;
 }
+
 .card#card-4 {
     background: var(--card-4);
     z-index: 2;
