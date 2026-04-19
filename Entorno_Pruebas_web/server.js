@@ -87,6 +87,11 @@ let db;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
+// Serve the QR scan landing page (GET) so scanner apps that only perform GET requests
+// can open a friendly page which will POST to the API to register attendance.
+app.get('/qr/scan/:resource/:token', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'qr-scan.html'));
+});
 // Session middleware: disable in serverless environments by setting DISABLE_SESSIONS=1
 // Auto-disable sessions when running on Vercel (serverless) to avoid MemoryStore timers
 const disableSessions = (process.env.DISABLE_SESSIONS === '1') || (process.env.VERCEL === '1') || (process.env.NODE_ENV === 'production' && process.env.DISABLE_SESSIONS !== '0');
@@ -531,23 +536,24 @@ app.post('/api/conferencias/:id/qr', requireRole('administrador', 'maestro'), as
 
     try {
         const qrToken = uuidv4();
-        const qrUrl = `${req.protocol}://${req.get('host')}/api/conferencias/qr/scan/${qrToken}`;
+        // New: point QR to a landing page that will POST to the API (`/qr/scan/:resource/:token`)
+        const qrUrl = `${req.protocol}://${req.get('host')}/qr/scan/conferencias/${qrToken}`;
         const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 400, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
 
         const existing = await qOne('SELECT id FROM conferencia_qr_codes WHERE conferencia_id = ?', [conferenciaId]);
         if (existing) {
             // FIX: Use correct SQL dialect for UPDATE
             if (dbLib.usePg) {
-                await dbLib.run("UPDATE conferencia_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '7 days' WHERE conferencia_id = ?", [qrToken, qrDataUrl, conferenciaId]);
+                await dbLib.run("UPDATE conferencia_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '14 days' WHERE conferencia_id = ?", [qrToken, qrDataUrl, conferenciaId]);
             } else {
-                await runSql('UPDATE conferencia_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+7 days") WHERE conferencia_id = ?', [qrToken, qrDataUrl, conferenciaId]);
+                await runSql('UPDATE conferencia_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+14 days") WHERE conferencia_id = ?', [qrToken, qrDataUrl, conferenciaId]);
             }
         } else {
             // FIX: Use correct interval syntax for Postgres INSERT
             if (dbLib.usePg) {
-                await dbLib.queryOne("INSERT INTO conferencia_qr_codes (conferencia_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '7 days') RETURNING id", [conferenciaId, qrToken, qrDataUrl]);
+                await dbLib.queryOne("INSERT INTO conferencia_qr_codes (conferencia_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '14 days') RETURNING id", [conferenciaId, qrToken, qrDataUrl]);
             } else {
-                await runSql('INSERT INTO conferencia_qr_codes (conferencia_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+7 days"))', [conferenciaId, qrToken, qrDataUrl]);
+                await runSql('INSERT INTO conferencia_qr_codes (conferencia_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+14 days"))', [conferenciaId, qrToken, qrDataUrl]);
             }
         }
         saveDb();
@@ -556,7 +562,7 @@ app.post('/api/conferencias/:id/qr', requireRole('administrador', 'maestro'), as
             qr_token: qrToken,
             qr_data_url: qrDataUrl,
             scan_url: qrUrl,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
         });
     } catch (err) {
         console.error('Error generando QR:', err);
@@ -761,23 +767,23 @@ app.post('/api/deportes/equipos/:id/qr', requireRole('administrador', 'maestro')
 
     try {
         const qrToken = uuidv4();
-        const qrUrl = `${req.protocol}://${req.get('host')}/api/deportes/qr/scan/${qrToken}`;
+        const qrUrl = `${req.protocol}://${req.get('host')}/qr/scan/deportes/${qrToken}`;
         const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 400, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
 
         const existing = await qOne('SELECT id FROM deportes_qr_codes WHERE equipo_id = ?', [equipoId]);
         if (existing) {
             // FIX: Use correct SQL dialect for UPDATE
             if (dbLib.usePg) {
-                await dbLib.run("UPDATE deportes_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '7 days' WHERE equipo_id = ?", [qrToken, qrDataUrl, equipoId]);
+                await dbLib.run("UPDATE deportes_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '14 days' WHERE equipo_id = ?", [qrToken, qrDataUrl, equipoId]);
             } else {
-                await runSql('UPDATE deportes_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+7 days") WHERE equipo_id = ?', [qrToken, qrDataUrl, equipoId]);
+                await runSql('UPDATE deportes_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+14 days") WHERE equipo_id = ?', [qrToken, qrDataUrl, equipoId]);
             }
         } else {
             // FIX: Use correct interval syntax for Postgres INSERT
             if (dbLib.usePg) {
-                await dbLib.queryOne("INSERT INTO deportes_qr_codes (equipo_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '7 days') RETURNING id", [equipoId, qrToken, qrDataUrl]);
+                await dbLib.queryOne("INSERT INTO deportes_qr_codes (equipo_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '14 days') RETURNING id", [equipoId, qrToken, qrDataUrl]);
             } else {
-                await runSql('INSERT INTO deportes_qr_codes (equipo_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+7 days"))', [equipoId, qrToken, qrDataUrl]);
+                await runSql('INSERT INTO deportes_qr_codes (equipo_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+14 days"))', [equipoId, qrToken, qrDataUrl]);
             }
         }
         saveDb();
@@ -786,7 +792,7 @@ app.post('/api/deportes/equipos/:id/qr', requireRole('administrador', 'maestro')
             qr_token: qrToken,
             qr_data_url: qrDataUrl,
             scan_url: qrUrl,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
         });
     } catch (err) {
         console.error('Error generando QR para equipo:', err);
@@ -980,23 +986,23 @@ app.post('/api/proyectos/:id/qr', requireRole('administrador', 'maestro'), async
 
     try {
         const qrToken = uuidv4();
-        const qrUrl = `${req.protocol}://${req.get('host')}/api/proyectos/qr/scan/${qrToken}`;
+        const qrUrl = `${req.protocol}://${req.get('host')}/qr/scan/proyectos/${qrToken}`;
         const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 400, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
 
         const existing = await qOne('SELECT id FROM proyectos_qr_codes WHERE proyecto_id = ?', [proyectoId]);
         if (existing) {
             // FIX: Use correct SQL dialect for UPDATE
             if (dbLib.usePg) {
-                await dbLib.run("UPDATE proyectos_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '7 days' WHERE proyecto_id = ?", [qrToken, qrDataUrl, proyectoId]);
+                await dbLib.run("UPDATE proyectos_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '14 days' WHERE proyecto_id = ?", [qrToken, qrDataUrl, proyectoId]);
             } else {
-                await runSql('UPDATE proyectos_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+7 days") WHERE proyecto_id = ?', [qrToken, qrDataUrl, proyectoId]);
+                await runSql('UPDATE proyectos_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+14 days") WHERE proyecto_id = ?', [qrToken, qrDataUrl, proyectoId]);
             }
         } else {
             // FIX: Use correct interval syntax for Postgres INSERT
             if (dbLib.usePg) {
-                await dbLib.queryOne("INSERT INTO proyectos_qr_codes (proyecto_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '7 days') RETURNING id", [proyectoId, qrToken, qrDataUrl]);
+                await dbLib.queryOne("INSERT INTO proyectos_qr_codes (proyecto_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '14 days') RETURNING id", [proyectoId, qrToken, qrDataUrl]);
             } else {
-                await runSql('INSERT INTO proyectos_qr_codes (proyecto_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+7 days"))', [proyectoId, qrToken, qrDataUrl]);
+                await runSql('INSERT INTO proyectos_qr_codes (proyecto_id, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+14 days"))', [proyectoId, qrToken, qrDataUrl]);
             }
         }
         saveDb();
@@ -1005,7 +1011,7 @@ app.post('/api/proyectos/:id/qr', requireRole('administrador', 'maestro'), async
             qr_token: qrToken,
             qr_data_url: qrDataUrl,
             scan_url: qrUrl,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
         });
     } catch (err) {
         console.error('Error generando QR para proyecto:', err);

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Escaneo QR - Registro de asistencia</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;padding:24px;background:#f7f8fb;color:#222}
+    .card{max-width:720px;margin:48px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(15,23,42,0.08)}
+    .ok{color:green}
+    .err{color:#b71c1c}
+    pre{white-space:pre-wrap;word-break:break-word}
+    .actions{margin-top:16px}
+    button{padding:8px 12px;border-radius:6px;border:1px solid #ccc;background:#f0f2f5}
+  </style>
+  <script>
+    // Extract resource and token from path: /qr/scan/:resource/:token
+    function parsePath(){
+      const parts = location.pathname.split('/').filter(Boolean); // ["qr","scan","resource","token"]
+      return { resource: parts[2] || '', token: parts[3] || '' };
+    }
+
+    async function doScan(){
+      const { resource, token } = parsePath();
+      if(!resource || !token){
+        renderError('URL inválida. Falta resource o token en la ruta.');
+        return;
+      }
+
+      const apiPath = `/api/${resource}/qr/scan/${token}`;
+
+      renderInfo(`Enviando POST a ${apiPath} ...`);
+
+      try{
+        const res = await fetch(apiPath, { method: 'POST', credentials: 'include' });
+        const text = await res.text();
+        if(res.ok){
+          renderSuccess('Asistencia registrada correctamente.');
+          renderResponse(text);
+        } else {
+          renderError(`Error: ${res.status} ${res.statusText}`);
+          renderResponse(text);
+        }
+      }catch(err){
+        renderError('Error de red: ' + err.message);
+      }
+    }
+
+    function renderInfo(msg){ document.getElementById('status').textContent = msg; document.getElementById('status').className=''; }
+    function renderSuccess(msg){ document.getElementById('status').textContent = msg; document.getElementById('status').className='ok'; }
+    function renderError(msg){ document.getElementById('status').textContent = msg; document.getElementById('status').className='err'; }
+    function renderResponse(txt){ document.getElementById('response').textContent = txt; }
+
+    window.addEventListener('DOMContentLoaded', ()=>{
+      const { resource, token } = parsePath();
+      document.getElementById('resource').textContent = resource || '[desconocido]';
+      document.getElementById('token').textContent = token || '[desconocido]';
+      // Auto-attempt POST so scanners that open the URL trigger attendance
+      doScan();
+      // Provide a retry button
+      document.getElementById('retry').addEventListener('click', doScan);
+    });
+  </script>
+</head>
+<body>
+  <main class="card">
+    <h1>Registro de asistencia</h1>
+    <p>Recurso: <strong id="resource"></strong> — Token: <code id="token"></code></p>
+    <p id="status">Iniciando...</p>
+    <div class="actions">
+      <button id="retry">Reintentar registro</button>
+    </div>
+    <h3>Respuesta del servidor</h3>
+    <pre id="response">(esperando respuesta)</pre>
+  </main>
+</body>
+</html>
