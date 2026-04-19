@@ -14,7 +14,7 @@ if (usePg) {
     console.log('Using SQLite database');
     const initSqlJs = require('sql.js');
     const DB_PATH = path.join(__dirname, '..', 'database.sqlite');
-    
+
     // Load or create SQLite database
     if (fs.existsSync(DB_PATH)) {
         const buffer = fs.readFileSync(DB_PATH);
@@ -33,142 +33,147 @@ function convertPlaceholders(sql) {
 
 async function initDb() {
     if (usePg) {
-        const { query } = pgModule;
-        
-        await query(`CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            rol TEXT NOT NULL CHECK (rol IN ('alumno','invitado','maestro','administrador')),
-            numero_control TEXT,
-            semestre INTEGER,
-            sexo TEXT,
-            horario TEXT,
-            edad INTEGER,
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+        // Use a SINGLE client for all schema queries to avoid opening 17 separate TCP connections
+        const { createSingleClient, endSingleClient } = pgModule;
+        const client = await createSingleClient();
+        try {
+            await client.query(`CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                rol TEXT NOT NULL CHECK (rol IN ('alumno','invitado','maestro','administrador')),
+                numero_control TEXT,
+                semestre INTEGER,
+                sexo TEXT,
+                horario TEXT,
+                edad INTEGER,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS ponentes (
-            id SERIAL PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            profesion TEXT,
-            topic_title TEXT,
-            topic_desc TEXT,
-            foto_path TEXT,
-            linkedin TEXT,
-            facebook TEXT,
-            instagram TEXT,
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS ponentes (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                profesion TEXT,
+                topic_title TEXT,
+                topic_desc TEXT,
+                foto_path TEXT,
+                linkedin TEXT,
+                facebook TEXT,
+                instagram TEXT,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS conferencias (
-            id SERIAL PRIMARY KEY,
-            titulo TEXT NOT NULL,
-            fecha DATE NOT NULL,
-            lugar TEXT NOT NULL,
-            descripcion TEXT,
-            ponente_nombre TEXT,
-            ponente_profesion TEXT,
-            ponente_foto TEXT,
-            foto_evento TEXT,
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS conferencias (
+                id SERIAL PRIMARY KEY,
+                titulo TEXT NOT NULL,
+                fecha DATE NOT NULL,
+                lugar TEXT NOT NULL,
+                descripcion TEXT,
+                ponente_nombre TEXT,
+                ponente_profesion TEXT,
+                ponente_foto TEXT,
+                foto_evento TEXT,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS conferencias_inscripciones (
-            id SERIAL PRIMARY KEY,
-            conferencia_id INTEGER REFERENCES conferencias(id),
-            user_id INTEGER REFERENCES users(id),
-            created_at TIMESTAMPTZ DEFAULT now(),
-            UNIQUE(conferencia_id, user_id)
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS conferencias_inscripciones (
+                id SERIAL PRIMARY KEY,
+                conferencia_id INTEGER REFERENCES conferencias(id),
+                user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(conferencia_id, user_id)
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS conferencia_qr_codes (
-            id SERIAL PRIMARY KEY,
-            conferencia_id INTEGER REFERENCES conferencias(id),
-            qr_token TEXT UNIQUE NOT NULL,
-            qr_data_url TEXT NOT NULL,
-            expires_at TIMESTAMPTZ NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS conferencia_qr_codes (
+                id SERIAL PRIMARY KEY,
+                conferencia_id INTEGER REFERENCES conferencias(id),
+                qr_token TEXT UNIQUE NOT NULL,
+                qr_data_url TEXT NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS asistencias_conferencias (
-            id SERIAL PRIMARY KEY,
-            conferencia_id INTEGER REFERENCES conferencias(id),
-            user_id INTEGER REFERENCES users(id),
-            qr_token TEXT,
-            scanned_at TIMESTAMPTZ DEFAULT now(),
-            UNIQUE(conferencia_id, user_id)
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS asistencias_conferencias (
+                id SERIAL PRIMARY KEY,
+                conferencia_id INTEGER REFERENCES conferencias(id),
+                user_id INTEGER REFERENCES users(id),
+                qr_token TEXT,
+                scanned_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(conferencia_id, user_id)
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS deportes_equipos (
-            id SERIAL PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            deporte TEXT NOT NULL CHECK (deporte IN ('futbol','basquetbol')),
-            dias TEXT NOT NULL,
-            created_by_user_id INTEGER REFERENCES users(id),
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS deportes_equipos (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                deporte TEXT NOT NULL CHECK (deporte IN ('futbol','basquetbol')),
+                dias TEXT NOT NULL,
+                created_by_user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS deportes_equipo_integrantes (
-            id SERIAL PRIMARY KEY,
-            equipo_id INTEGER REFERENCES deportes_equipos(id),
-            user_id INTEGER REFERENCES users(id),
-            created_at TIMESTAMPTZ DEFAULT now(),
-            UNIQUE(equipo_id, user_id)
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS deportes_equipo_integrantes (
+                id SERIAL PRIMARY KEY,
+                equipo_id INTEGER REFERENCES deportes_equipos(id),
+                user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(equipo_id, user_id)
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS deportes_qr_codes (
-            id SERIAL PRIMARY KEY,
-            equipo_id INTEGER REFERENCES deportes_equipos(id),
-            qr_token TEXT UNIQUE NOT NULL,
-            qr_data_url TEXT NOT NULL,
-            expires_at TIMESTAMPTZ NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS deportes_qr_codes (
+                id SERIAL PRIMARY KEY,
+                equipo_id INTEGER REFERENCES deportes_equipos(id),
+                qr_token TEXT UNIQUE NOT NULL,
+                qr_data_url TEXT NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS asistencias_deportes (
-            id SERIAL PRIMARY KEY,
-            equipo_id INTEGER REFERENCES deportes_equipos(id),
-            user_id INTEGER REFERENCES users(id),
-            qr_token TEXT,
-            scanned_at TIMESTAMPTZ DEFAULT now(),
-            UNIQUE(equipo_id, user_id)
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS asistencias_deportes (
+                id SERIAL PRIMARY KEY,
+                equipo_id INTEGER REFERENCES deportes_equipos(id),
+                user_id INTEGER REFERENCES users(id),
+                qr_token TEXT,
+                scanned_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(equipo_id, user_id)
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS proyectos (
-            id SERIAL PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            descripcion TEXT NOT NULL,
-            created_by_user_id INTEGER REFERENCES users(id),
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS proyectos (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                descripcion TEXT NOT NULL,
+                created_by_user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS proyecto_integrantes (
-            id SERIAL PRIMARY KEY,
-            proyecto_id INTEGER REFERENCES proyectos(id),
-            user_id INTEGER REFERENCES users(id),
-            created_at TIMESTAMPTZ DEFAULT now(),
-            UNIQUE(proyecto_id, user_id)
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS proyecto_integrantes (
+                id SERIAL PRIMARY KEY,
+                proyecto_id INTEGER REFERENCES proyectos(id),
+                user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(proyecto_id, user_id)
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS proyectos_qr_codes (
-            id SERIAL PRIMARY KEY,
-            proyecto_id INTEGER REFERENCES proyectos(id),
-            qr_token TEXT UNIQUE NOT NULL,
-            qr_data_url TEXT NOT NULL,
-            expires_at TIMESTAMPTZ NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT now()
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS proyectos_qr_codes (
+                id SERIAL PRIMARY KEY,
+                proyecto_id INTEGER REFERENCES proyectos(id),
+                qr_token TEXT UNIQUE NOT NULL,
+                qr_data_url TEXT NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
 
-        await query(`CREATE TABLE IF NOT EXISTS asistencias_proyectos (
-            id SERIAL PRIMARY KEY,
-            proyecto_id INTEGER REFERENCES proyectos(id),
-            user_id INTEGER REFERENCES users(id),
-            qr_token TEXT,
-            scanned_at TIMESTAMPTZ DEFAULT now(),
-            UNIQUE(proyecto_id, user_id)
-        );`);
+            await client.query(`CREATE TABLE IF NOT EXISTS asistencias_proyectos (
+                id SERIAL PRIMARY KEY,
+                proyecto_id INTEGER REFERENCES proyectos(id),
+                user_id INTEGER REFERENCES users(id),
+                qr_token TEXT,
+                scanned_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(proyecto_id, user_id)
+            );`);
+        } finally {
+            await endSingleClient(client);
+        }
     } else {
         // SQLite schema
         db.exec(`CREATE TABLE IF NOT EXISTS users (
@@ -305,7 +310,7 @@ async function initDb() {
             scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(proyecto_id, user_id)
         );`);
-        
+
         saveDb();
     }
     console.log('Database initialized');

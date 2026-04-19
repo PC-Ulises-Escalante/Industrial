@@ -312,15 +312,15 @@ app.post('/api/register', async (req, res) => {
         plainPassword = email.split('@')[0] + '2026';
     }
 
-    const hash = bcrypt.hashSync(plainPassword, 10);
+    const hash = await bcrypt.hash(plainPassword, 10);
 
     const existing = await dbLib.queryOne('SELECT id FROM users WHERE email = ?', [email.trim().toLowerCase()]);
     if (existing) return res.status(409).json({ error: 'Este correo ya está registrado' });
 
     try {
         const params = [nombre.trim(), email.trim().toLowerCase(), hash, userRol,
-            numero_control || null, semestre ? parseInt(semestre) : null,
-            sexo || null, horario || null, edad ? parseInt(edad) : null];
+        numero_control || null, semestre ? parseInt(semestre) : null,
+        sexo || null, horario || null, edad ? parseInt(edad) : null];
 
         if (dbLib.usePg) {
             const inserted = await dbLib.queryOne('INSERT INTO users (nombre, email, password, rol, numero_control, semestre, sexo, horario, edad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id', params);

@@ -116,13 +116,8 @@ module.exports = async function (req, res) {
                                             console.error('[api] error closing Server handle', e && e.stack ? e.stack : e);
                                         }
                                     } else if ((ctor === 'Socket' || ctor === 'TLSSocket') && typeof h.destroy === 'function') {
-                                        // Only destroy loopback/local sockets to avoid terminating remote connections unexpectedly
-                                        try {
-                                            const local = h.localAddress || '';
-                                            if (!local || local === '127.0.0.1' || local === '::1') {
-                                                try { h.destroy(); } catch (e) { /* ignore */ }
-                                            }
-                                        } catch (e) { /* ignore */ }
+                                        // Destroy ALL sockets in serverless to allow process exit
+                                        try { h.destroy(); } catch (e) { /* ignore */ }
                                     }
                                 } catch (e) {
                                     /* ignore per-handle errors */
@@ -155,7 +150,7 @@ module.exports = async function (req, res) {
         } catch (e) {
             console.error('[api] error in pg close block', e && e.stack ? e.stack : e);
         }
-        return result;
+        // Handler completed and cleanup done
     } catch (err) {
         console.error('[api] Error inicializando la app:', err && err.stack ? err.stack : err);
         // If headers not sent, send a 500 response

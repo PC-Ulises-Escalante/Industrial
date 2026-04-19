@@ -82,9 +82,20 @@ async function endPool() {
             try { await global.__pgPool.end(); } catch (err) { console.error('Error ending pg pool', err && err.message ? err.message : err); }
             try { delete global.__pgPool; } catch (e) { global.__pgPool = undefined; }
         }
-    } else {
-        // no-op for per-request clients
-        return;
+    }
+    // Even with per-request clients, nothing to clean up here — clients are ended individually
+}
+
+// Create a single Client for batch operations (e.g. initDb)
+async function createSingleClient() {
+    const c = new Client({ connectionString: sanitizedConnectionString, ssl: buildSslOption() });
+    await c.connect();
+    return c;
+}
+
+async function endSingleClient(client) {
+    if (client) {
+        try { await client.end(); } catch (e) { /* ignore */ }
     }
 }
 
@@ -121,7 +132,7 @@ async function getClient() {
     return getPool().connect();
 }
 
-module.exports = { query, getClient, endPool };
+module.exports = { query, getClient, endPool, createSingleClient, endSingleClient };
 
 function buildSslOption() {
     const opt = resolveSslOption(); // existing resolve
