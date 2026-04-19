@@ -158,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gsap.from(speakerCards, {
             scrollTrigger: {
                 trigger: ".speakers-grid",
+                scroller: ".sidebar",
                 start: "top 90%",
                 toggleActions: "play none none none"
             },
@@ -166,7 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
             scale: 0.9,
             duration: 0.45,
             stagger: 0.07,
-            ease: "back.out(1.2)"
+            ease: "back.out(1.2)",
+            immediateRender: false
         });
     }
 
