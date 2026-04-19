@@ -5,7 +5,7 @@ Fecha: 2026-04-16
 ## Descripción
 
 Sitio web informativo para la "Semana Académica 2026 — Ingeniería Industrial".
-Permite mostrar agenda, ponentes y empresas invitadas, y gestionar usuarios (registro/login). Incluye un panel público con listado de ponentes y una UI para que el administrador agregue ponentes con foto.
+Permite mostrar agenda y ponentes, y gestionar usuarios (registro/login). Incluye un panel público con listado de ponentes y una UI para que el administrador agregue ponentes con foto.
 
 ## Estructura principal del repositorio
 
@@ -16,7 +16,7 @@ Permite mostrar agenda, ponentes y empresas invitadas, y gestionar usuarios (reg
 - `CSS Styles/` — Carpeta con hojas de estilo (ej. `styles.css`, `navbar.css`, `ponentes.css`, `registro.css`, etc.).
 - `Images/` — Imágenes del sitio; `Images/ponentes/` almacena fotos subidas.
 - `Javascript/` — Código cliente: `auth.js` (sesiones, navbar, drawer), `script.js` (animaciones y helpers).
-- `Paginas/` — Páginas estáticas: `ponentes.html`, `registro.html`, `administrador.html`, `empresas_Invitadas.html`, `usuarios.html`.
+- `Paginas/` — Páginas estáticas: `ponentes.html`, `registro.html`, `administrador.html`, `usuarios.html`.
 - `tools/dump_users.js` — Script auxiliar para inspeccionar/volcar usuarios de la BD.
 
 ## Backend (resumen técnico)
