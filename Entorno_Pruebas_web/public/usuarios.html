@@ -275,6 +275,7 @@
                 document.getElementById('filter-count').textContent =
                     `${filtered.length} usuario${filtered.length !== 1 ? 's' : ''}`;
 
+                window.filteredUsersExport = filtered;
                 renderTable(filtered);
             }
 
@@ -401,42 +402,32 @@
             const btnCsv = document.getElementById('btn-export-csv');
             if(btnCsv) {
                 btnCsv.addEventListener('click', () => {
-                    const trs = document.querySelectorAll('#users-table-body tr');
-                    if (trs.length === 0 || (trs.length === 1 && trs[0].querySelector('.admin-empty'))) {
+                    const dataToExport = window.filteredUsersExport || window.allUsers;
+                    if (!dataToExport || dataToExport.length === 0) {
                         return alert('No hay datos para exportar.');
                     }
 
                     const removeAccents = (str) => {
                         if (!str) return '';
-                        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                     };
 
                     const rows = [];
                     // Header
                     rows.push(['ID', 'Nombre', 'Email', 'Rol', 'Horario', 'Num_Control', 'Semestre', 'Credito_Complementario', 'Registro'].join(','));
 
-                    trs.forEach(tr => {
-                        const tds = tr.querySelectorAll('td');
-                        if (tds.length >= 9) {
-                            const id = tds[0].textContent.trim();
-                            const nombre = removeAccents(tds[1].textContent.trim()).replace(/,/g, '');
-                            const email = removeAccents(tds[2].textContent.trim() === '—' ? '' : tds[2].textContent.trim());
-                            const rol = tds[3].textContent.trim();
-                            const horario = removeAccents(tds[4].textContent.trim());
-                            const num = tds[5].textContent.trim() === '—' ? '' : tds[5].textContent.trim();
-                            const sem = tds[6].textContent.trim() === '—' ? '' : tds[6].textContent.trim();
-                            
-                            // Check if credito is 'x' or 'check' icon
-                            let cred = 'No';
-                            const svgStr = tds[7].innerHTML;
-                            if(svgStr.includes('10 18')) cred = 'Si'; // the check SVG has path M9 12l2 2 4-4 or polyline 20 6 9 17 4 12
-                            else if(svgStr.includes('Sí')) cred = 'Si'; // inside badge
-                            else if(tds[7].textContent.trim().toLowerCase() === 'sí') cred = 'Si';
-                            
-                            const reg = tds[8].textContent.trim().replace(/,/g, ' ');
+                    dataToExport.forEach(u => {
+                        const id = u.id;
+                        const nombre = removeAccents(u.nombre).replace(/,/g, '');
+                        const email = removeAccents(u.email).replace(/,/g, '');
+                        const rol = u.rol ? u.rol : '';
+                        const horario = u.horario ? removeAccents(u.horario) : '';
+                        const num = u.numero_control ? u.numero_control : '';
+                        const sem = u.semestre ? u.semestre : '';
+                        let cred = u.rol === 'alumno' ? (u.credito_complementario ? 'Acreedor' : 'No Cumple') : '';
+                        let reg = u.created_at ? formatDate(u.created_at).replace(/,/g, ' ') : '';
 
-                            rows.push([id, nombre, email, rol, horario, num, sem, cred, reg].join(','));
-                        }
+                        rows.push([id, nombre, email, rol, horario, num, sem, cred, reg].join(','));
                     });
 
                     const csvContent = rows.join('\n');
