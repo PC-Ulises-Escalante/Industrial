@@ -12,6 +12,9 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
 
 <body>
@@ -87,13 +90,13 @@
             </select>
             <span class="filter-count" id="filter-count">0 usuarios</span>
             <div style="display:flex; gap:10px; margin-left:auto;">
-                <button id="btn-export-csv" class="btn-registrar" style="padding:8px 16px; background:#10b981; color:#fff; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                <button id="btn-export-excel" class="btn-registrar" style="padding:8px 16px; background:#10b981; color:#fff; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    Exportar CSV
+                    Exportar Excel
                 </button>
-                <button id="btn-export-png" class="btn-registrar" style="padding:8px 16px; background:#8b5cf6; color:#fff; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Exportar PNG
+                <button id="btn-export-pdf" class="btn-registrar" style="padding:8px 16px; background:#8b5cf6; color:#fff; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Exportar PDF
                 </button>
             </div>
         </div>
@@ -398,89 +401,456 @@
                 setTimeout(() => toast.classList.remove('show'), 3000);
             }
 
-            // EXPORT TO CSV
-            const btnCsv = document.getElementById('btn-export-csv');
-            if(btnCsv) {
-                btnCsv.addEventListener('click', () => {
-                    const dataToExport = window.filteredUsersExport || window.allUsers;
-                    if (!dataToExport || dataToExport.length === 0) {
-                        return alert('No hay datos para exportar.');
+            // EXPORT TO PDF
+            const btnPdf = document.getElementById('btn-export-pdf');
+            if (btnPdf) {
+                btnPdf.addEventListener('click', async () => {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    const logoUrl = '/Semana.png';
+                    let logoData = null;
+                    try {
+                        const logoRes = await fetch(logoUrl);
+                        const logoBlob = await logoRes.blob();
+                        logoData = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(logoBlob);
+                        });
+                    } catch (e) { console.warn('Logo no disponible', e); }
+
+                    const now = new Date();
+                    const fechaHora = now.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' }) +
+                        '  |  ' + now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+                    const primaryColor = [37, 99, 235];
+                    const headerBg = [15, 23, 42];
+
+                    async function fetchSection(url) {
+                        try {
+                            const res = await authFetch(url);
+                            if (res.ok) return await res.json();
+                        } catch (e) { console.error('Error fetching', url, e); }
+                        return [];
                     }
 
-                    const removeAccents = (str) => {
-                        if (!str) return '';
-                        return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                    };
+                    const [alumnos, equipos, proyectos, conferencias] = await Promise.all([
+                        fetchSection('/api/users'),
+                        fetchSection('/api/deportes/equipos'),
+                        fetchSection('/api/proyectos'),
+                        fetchSection('/api/conferencias')
+                    ]);
 
-                    const rows = [];
-                    // Header
-                    rows.push(['ID', 'Nombre', 'Email', 'Rol', 'Horario', 'Num_Control', 'Semestre', 'Credito_Complementario', 'Registro'].join(','));
+                    function addHeader(doc, startY) {
+                        if (logoData) {
+                            doc.addImage(logoData, 'PNG', 15, startY, 28, 28);
+                        }
+                        doc.setFontSize(18);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(255, 255, 255);
+                        doc.rect(15, startY, 180, 28, 'F');
+                        if (logoData) {
+                            doc.addImage(logoData, 'PNG', 15, startY, 28, 28);
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(16);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Semana Académica Industrial ITT', 48, startY + 12);
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text('Reporte de registro de alumnos y actividades', 48, startY + 20);
+                        } else {
+                            doc.setTextColor(255, 255, 255);
+                            doc.text('Semana Académica Industrial ITT', 15, startY + 12);
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text('Reporte de registro de alumnos y actividades', 15, startY + 20);
+                        }
+                    }
 
-                    dataToExport.forEach(u => {
-                        const id = u.id;
-                        const nombre = removeAccents(u.nombre).replace(/,/g, '');
-                        const email = removeAccents(u.email).replace(/,/g, '');
-                        const rol = u.rol ? u.rol : '';
-                        const horario = u.horario ? removeAccents(u.horario) : '';
-                        const num = u.numero_control ? u.numero_control : '';
-                        const sem = u.semestre ? u.semestre : '';
-                        let cred = u.rol === 'alumno' ? (u.credito_complementario ? 'Acreedor' : 'No Cumple') : '';
-                        let reg = u.created_at ? formatDate(u.created_at).replace(/,/g, ' ') : '';
+                    function addFechaHora(doc, y) {
+                        doc.setFontSize(9);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(100, 116, 139);
+                        doc.text('Fecha y hora de generación: ' + fechaHora, 15, y);
+                    }
 
-                        rows.push([id, nombre, email, rol, horario, num, sem, cred, reg].join(','));
+                    // --- SECTION 1: ALUMNOS ---
+                    addHeader(doc, 14);
+                    let currentY = 50;
+                    addFechaHora(doc, currentY);
+                    currentY += 6;
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.text('1. Alumnos Registrados', 15, currentY);
+                    currentY += 4;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(71, 85, 105);
+                    doc.text('Total: ' + alumnos.length + ' registro(s)', 15, currentY);
+                    currentY += 4;
+
+                    const alumRows = alumnos.map(u => [
+                        u.id,
+                        u.nombre || '',
+                        u.email || '',
+                        u.rol || '',
+                        u.horario ? (u.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        u.numero_control || '',
+                        u.semestre || '',
+                        u.rol === 'alumno' ? (u.credito_complementario ? 'Acreedor' : 'No Cumple') : '—',
+                        formatDate(u.created_at)
+                    ]);
+                    doc.autoTable({
+                        startY: currentY,
+                        head: [['ID', 'Nombre', 'Email', 'Rol', 'Horario', 'Núm. Control', 'Sem.', 'Crédito Comp.', 'Registro']],
+                        body: alumRows,
+                        startX: 15,
+                        margin: { left: 15, right: 15 },
+                        theme: 'grid',
+                        headStyles: { fillColor: headerBg, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+                        bodyStyles: { fontSize: 7, textColor: [30, 41, 59] },
+                        alternateRowStyles: { fillColor: [241, 245, 249] },
+                        columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 35 }, 2: { cellWidth: 45 }, 3: { cellWidth: 20 }, 4: { cellWidth: 20 }, 5: { cellWidth: 25 }, 6: { cellWidth: 12 }, 7: { cellWidth: 22 }, 8: { cellWidth: 25 } }
                     });
 
-                    const csvContent = rows.join('\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    // --- SECTION 2: EQUIPOS DEPORTES ---
+                    if (doc.lastAutoTable) currentY = doc.lastAutoTable.finalY + 10;
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.text('2. Equipos de Deportes', 15, currentY);
+                    currentY += 5;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(71, 85, 105);
+                    doc.text('Total: ' + equipos.length + ' equipo(s) registrado(s)', 15, currentY);
+                    currentY += 4;
+
+                    const depRows = equipos.map(eq => [
+                        eq.id,
+                        eq.nombre_equipo || eq.nombre || '',
+                        eq.deporte || '',
+                        eq.categoria || '',
+                        eq.integrantes ? eq.integrantes.length : (eq.integrantes_array ? eq.integrantes_array.length : 0),
+                        eq.horario || '',
+                        eq.ubicacion || '',
+                        eq.horario ? (eq.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        eq.created_at ? formatDate(eq.created_at) : ''
+                    ]);
+                    doc.autoTable({
+                        startY: currentY,
+                        head: [['ID', 'Nombre del Equipo', 'Deporte', 'Categoría', 'Integrantes', 'Horario', 'Ubicación', 'Turno', 'Registro']],
+                        body: depRows,
+                        startX: 15,
+                        margin: { left: 15, right: 15 },
+                        theme: 'grid',
+                        headStyles: { fillColor: headerBg, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+                        bodyStyles: { fontSize: 7, textColor: [30, 41, 59] },
+                        alternateRowStyles: { fillColor: [241, 245, 249] },
+                        columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 30 }, 2: { cellWidth: 25 }, 3: { cellWidth: 22 }, 4: { cellWidth: 20 }, 5: { cellWidth: 20 }, 6: { cellWidth: 25 }, 7: { cellWidth: 20 }, 8: { cellWidth: 25 } }
+                    });
+
+                    // --- SECTION 3: PROYECTOS ---
+                    if (doc.lastAutoTable) currentY = doc.lastAutoTable.finalY + 10;
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.text('3. Proyectos', 15, currentY);
+                    currentY += 5;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(71, 85, 105);
+                    doc.text('Total: ' + proyectos.length + ' proyecto(s) registrado(s)', 15, currentY);
+                    currentY += 4;
+
+                    const projRows = proyectos.map(p => [
+                        p.id,
+                        p.nombre || p.titulo || '',
+                        p.categoria || '',
+                        p.descripcion || '',
+                        p.horario || '',
+                        p.ubicacion || '',
+                        p.horario ? (p.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        p.integrantes ? p.integrantes.length : (p.integrantes_array ? p.integrantes_array.length : 0),
+                        p.created_at ? formatDate(p.created_at) : ''
+                    ]);
+                    doc.autoTable({
+                        startY: currentY,
+                        head: [['ID', 'Nombre', 'Categoría', 'Descripción', 'Horario', 'Ubicación', 'Turno', 'Integrantes', 'Registro']],
+                        body: projRows,
+                        startX: 15,
+                        margin: { left: 15, right: 15 },
+                        theme: 'grid',
+                        headStyles: { fillColor: headerBg, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+                        bodyStyles: { fontSize: 7, textColor: [30, 41, 59] },
+                        alternateRowStyles: { fillColor: [241, 245, 249] },
+                        columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 28 }, 2: { cellWidth: 22 }, 3: { cellWidth: 35 }, 4: { cellWidth: 20 }, 5: { cellWidth: 25 }, 6: { cellWidth: 18 }, 7: { cellWidth: 18 }, 8: { cellWidth: 24 } }
+                    });
+
+                    // --- SECTION 4: CONFERENCIAS ---
+                    if (doc.lastAutoTable) currentY = doc.lastAutoTable.finalY + 10;
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.text('4. Conferencias', 15, currentY);
+                    currentY += 5;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(71, 85, 105);
+                    doc.text('Total: ' + conferencias.length + ' conferencia(s) registrada(s)', 15, currentY);
+                    currentY += 4;
+
+                    const confRows = conferencias.map(c => [
+                        c.id,
+                        c.nombre || c.titulo || '',
+                        c.ponente || c.nombre_ponente || '',
+                        c.fecha || '',
+                        c.horario || '',
+                        c.ubicacion || '',
+                        c.cupo || c.capacidad || '',
+                        c.horario ? (c.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        c.created_at ? formatDate(c.created_at) : ''
+                    ]);
+                    doc.autoTable({
+                        startY: currentY,
+                        head: [['ID', 'Nombre', 'Ponente', 'Fecha', 'Horario', 'Ubicación', 'Cupo', 'Turno', 'Registro']],
+                        body: confRows,
+                        startX: 15,
+                        margin: { left: 15, right: 15 },
+                        theme: 'grid',
+                        headStyles: { fillColor: headerBg, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+                        bodyStyles: { fontSize: 7, textColor: [30, 41, 59] },
+                        alternateRowStyles: { fillColor: [241, 245, 249] },
+                        columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 28 }, 2: { cellWidth: 25 }, 3: { cellWidth: 22 }, 4: { cellWidth: 20 }, 5: { cellWidth: 25 }, 6: { cellWidth: 15 }, 7: { cellWidth: 18 }, 8: { cellWidth: 24 } }
+                    });
+
+                    const fechaStr = now.toISOString().split('T')[0];
+                    doc.save(`reporte_semana_academica_${fechaStr}.pdf`);
+                    showToast('PDF exportado exitosamente');
+                });
+            }
+
+            // EXPORT TO EXCEL
+            const btnExcel = document.getElementById('btn-export-excel');
+            if (btnExcel) {
+                btnExcel.addEventListener('click', async () => {
+                    const workbook = new ExcelJS.Workbook();
+                    workbook.creator = 'Semana Académica ITT';
+                    workbook.created = new Date();
+
+                    const logoUrl = '/Semana.png';
+                    let logoData = null;
+                    try {
+                        const logoRes = await fetch(logoUrl);
+                        const logoBlob = await logoRes.blob();
+                        logoData = await new Promise(resolve => {
+                            return new Promise(resolve2 => {
+                                const reader = new FileReader();
+                                reader.onload = () => resolve2(reader.result);
+                                reader.readAsDataURL(logoBlob);
+                            });
+                        });
+                    } catch (e) { console.warn('Logo no disponible', e); }
+
+                    async function fetchSection(url) {
+                        try {
+                            const res = await authFetch(url);
+                            if (res.ok) return await res.json();
+                        } catch (e) { console.error('Error fetching', url, e); }
+                        return [];
+                    }
+
+                    const now = new Date();
+                    const fechaHora = now.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' }) +
+                        '  |  ' + now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+                    const [alumnos, equipos, proyectos, conferencias] = await Promise.all([
+                        fetchSection('/api/users'),
+                        fetchSection('/api/deportes/equipos'),
+                        fetchSection('/api/proyectos'),
+                        fetchSection('/api/conferencias')
+                    ]);
+
+                    function addLogoToSheet(sheet, title, subtitle) {
+                        if (logoData) {
+                            sheet.addImage(logoData, { tl: { x: 0, y: 0 }, ext: { width: 80, height: 80 } });
+                        }
+                        sheet.mergeCells('A:I');
+                        const titleCell = sheet.getCell('A1');
+                        titleCell.value = title;
+                        titleCell.font = { name: 'Calibri', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+                        titleCell.fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FF1e3a5f' } };
+                        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+                        sheet.getRow(1).height = 30;
+
+                        sheet.mergeCells('A2:I2');
+                        const subCell = sheet.getCell('A2');
+                        subCell.value = subtitle;
+                        subCell.font = { name: 'Calibri', size: 11, italic: true, color: { argb: 'FF94a3b8' } };
+                        subCell.fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FF0f172a' } };
+                        subCell.alignment = { horizontal: 'center', vertical: 'middle' };
+                        sheet.getRow(2).height = 20;
+
+                        sheet.mergeCells('A3:I3');
+                        const dateCell = sheet.getCell('A3');
+                        dateCell.value = 'Fecha y hora de generación: ' + fechaHora;
+                        dateCell.font = { name: 'Calibri', size: 9, color: { argb: 'FF64748b' } };
+                        dateCell.alignment = { horizontal: 'center' };
+                        sheet.getRow(3).height = 16;
+
+                        if (logoData) {
+                            sheet.addImage(logoData, { tl: { x: 0, y: 0 }, ext: { width: 80, height: 80 } });
+                            const imgCell = sheet.getCell('J1');
+                            imgCell.value = '';
+                            sheet.mergeCells('J1:K3');
+                        }
+                    }
+
+                    // HOJA 1: ALUMNOS
+                    const sheetAlum = workbook.addWorksheet('Alumnos');
+                    sheetAlum.columns = [
+                        { header: 'ID', key: 'id', width: 8 },
+                        { header: 'Nombre', key: 'nombre', width: 30 },
+                        { header: 'Email', key: 'email', width: 40 },
+                        { header: 'Rol', key: 'rol', width: 18 },
+                        { header: 'Horario', key: 'horario', width: 18 },
+                        { header: 'Núm. Control', key: 'numero_control', width: 20 },
+                        { header: 'Semestre', key: 'semestre', width: 12 },
+                        { header: 'Crédito Complementario', key: 'credito_complementario', width: 22 },
+                        { header: 'Fecha de Registro', key: 'created_at', width: 18 }
+                    ];
+                    addLogoToSheet(sheetAlum, 'Semana Académica Industrial ITT', 'Reporte de Alumnos Registrados');
+                    sheetAlum.getRow(5).values = ['ID', 'Nombre', 'Email', 'Rol', 'Horario', 'Núm. Control', 'Semestre', 'Crédito Complementario', 'Fecha de Registro'];
+                    sheetAlum.getRow(5).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    sheetAlum.getRow(5).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FF1e3a5f' } };
+                    sheetAlum.getRow(5).alignment = { horizontal: 'center' };
+                    alumnos.forEach((u, i) => {
+                        const rowNum = i + 6;
+                        const credVal = u.rol === 'alumno' ? (u.credito_complementario ? 'Acreedor' : 'No Cumple') : '—';
+                        sheetAlum.addRow({
+                            id: u.id, nombre: u.nombre || '', email: u.email || '',
+                            rol: u.rol || '', horario: u.horario || '',
+                            numero_control: u.numero_control || '', semestre: u.semestre || '',
+                            credito_complementario: credVal, created_at: formatDate(u.created_at)
+                        });
+                        if (i % 2 === 0) {
+                            sheetAlum.getRow(rowNum).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+                        }
+                    });
+
+                    // HOJA 2: DEPORTES
+                    const sheetDep = workbook.addWorksheet('Deportes');
+                    sheetDep.columns = [
+                        { header: 'ID', key: 'id', width: 8 },
+                        { header: 'Nombre del Equipo', key: 'nombre_equipo', width: 28 },
+                        { header: 'Deporte', key: 'deporte', width: 20 },
+                        { header: 'Categoría', key: 'categoria', width: 18 },
+                        { header: 'Integrantes', key: 'integrantes', width: 18 },
+                        { header: 'Horario', key: 'horario', width: 18 },
+                        { header: 'Ubicación', key: 'ubicacion', width: 25 },
+                        { header: 'Turno', key: 'turno', width: 15 },
+                        { header: 'Fecha de Registro', key: 'created_at', width: 18 }
+                    ];
+                    addLogoToSheet(sheetDep, 'Semana Académica Industrial ITT', 'Reporte de Equipos de Deportes');
+                    sheetDep.getRow(5).values = ['ID', 'Nombre del Equipo', 'Deporte', 'Categoría', 'Integrantes', 'Horario', 'Ubicación', 'Turno', 'Fecha de Registro'];
+                    sheetDep.getRow(5).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    sheetDep.getRow(5).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FF1e3a5f' } };
+                    sheetDep.getRow(5).alignment = { horizontal: 'center' };
+                    equipos.forEach((eq, i) => {
+                        const rowNum = i + 6;
+                        const integ = eq.integrantes ? eq.integrantes.length : (eq.integrantes_array ? eq.integrantes_array.length : 0);
+                        const turno = eq.horario ? (eq.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '';
+                        sheetDep.addRow({
+                            id: eq.id, nombre_equipo: eq.nombre_equipo || eq.nombre || '',
+                            deporte: eq.deporte || '', categoria: eq.categoria || '',
+                            integrantes: integ, horario: eq.horario || '', ubicacion: eq.ubicacion || '',
+                            turno: turno, created_at: formatDate(eq.created_at)
+                        });
+                        if (i % 2 === 0) {
+                            sheetDep.getRow(rowNum).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+                        }
+                    });
+
+                    // HOJA 3: PROYECTOS
+                    const sheetProj = workbook.addWorksheet('Proyectos');
+                    sheetProj.columns = [
+                        { header: 'ID', key: 'id', width: 8 },
+                        { header: 'Nombre', key: 'nombre', width: 28 },
+                        { header: 'Categoría', key: 'categoria', width: 20 },
+                        { header: 'Descripción', key: 'descripcion', width: 40 },
+                        { header: 'Horario', key: 'horario', width: 18 },
+                        { header: 'Ubicación', key: 'ubicacion', width: 25 },
+                        { header: 'Turno', key: 'turno', width: 15 },
+                        { header: 'Integrantes', key: 'integrantes', width: 18 },
+                        { header: 'Fecha de Registro', key: 'created_at', width: 18 }
+                    ];
+                    addLogoToSheet(sheetProj, 'Semana Académica Industrial ITT', 'Reporte de Proyectos');
+                    sheetProj.getRow(5).values = ['ID', 'Nombre', 'Categoría', 'Descripción', 'Horario', 'Ubicación', 'Turno', 'Integrantes', 'Fecha de Registro'];
+                    sheetProj.getRow(5).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    sheetProj.getRow(5).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FF1e3a5f' } };
+                    sheetProj.getRow(5).alignment = { horizontal: 'center' };
+                    proyectos.forEach((p, i) => {
+                        const rowNum = i + 6;
+                        const integ = p.integrantes ? p.integrantes.length : (p.integrantes_array ? p.integrantes_array.length : 0);
+                        const turno = p.horario ? (p.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '';
+                        sheetProj.addRow({
+                            id: p.id, nombre: p.nombre || p.titulo || '',
+                            categoria: p.categoria || '', descripcion: p.descripcion || '',
+                            horario: p.horario || '', ubicacion: p.ubicacion || '',
+                            turno: turno, integrantes: integ, created_at: formatDate(p.created_at)
+                        });
+                        if (i % 2 === 0) {
+                            sheetProj.getRow(rowNum).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+                        }
+                    });
+
+                    // HOJA 4: CONFERENCIAS
+                    const sheetConf = workbook.addWorksheet('Conferencias');
+                    sheetConf.columns = [
+                        { header: 'ID', key: 'id', width: 8 },
+                        { header: 'Nombre', key: 'nombre', width: 28 },
+                        { header: 'Ponente', key: 'ponente', width: 25 },
+                        { header: 'Fecha', key: 'fecha', width: 18 },
+                        { header: 'Horario', key: 'horario', width: 18 },
+                        { header: 'Ubicación', key: 'ubicacion', width: 25 },
+                        { header: 'Cupo', key: 'cupo', width: 12 },
+                        { header: 'Turno', key: 'turno', width: 15 },
+                        { header: 'Fecha de Registro', key: 'created_at', width: 18 }
+                    ];
+                    addLogoToSheet(sheetConf, 'Semana Académica Industrial ITT', 'Reporte de Conferencias');
+                    sheetConf.getRow(5).values = ['ID', 'Nombre', 'Ponente', 'Fecha', 'Horario', 'Ubicación', 'Cupo', 'Turno', 'Fecha de Registro'];
+                    sheetConf.getRow(5).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    sheetConf.getRow(5).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FF1e3a5f' } };
+                    sheetConf.getRow(5).alignment = { horizontal: 'center' };
+                    conferencias.forEach((c, i) => {
+                        const rowNum = i + 6;
+                        const turno = c.horario ? (c.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '';
+                        sheetConf.addRow({
+                            id: c.id, nombre: c.nombre || c.titulo || '',
+                            ponente: c.ponente || c.nombre_ponente || '',
+                            fecha: c.fecha || '', horario: c.horario || '',
+                            ubicacion: c.ubicacion || '', cupo: c.cupo || c.capacidad || '',
+                            turno: turno, created_at: formatDate(c.created_at)
+                        });
+                        if (i % 2 === 0) {
+                            sheetConf.getRow(rowNum).fill = { type: 'patternFill', patternType: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+                        }
+                    });
+
+                    const fechaStr = now.toISOString().split('T')[0];
+                    const buffer = await workbook.xlsx.writeBuffer();
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'usuarios_export.csv';
+                    a.download = `reporte_semana_academica_${fechaStr}.xlsx`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                });
-            }
-
-            // EXPORT TO PNG
-            const btnPng = document.getElementById('btn-export-png');
-            if(btnPng) {
-                btnPng.addEventListener('click', async () => {
-                    const tableWrapper = document.querySelector('.admin-table-wrapper');
-                    if (!tableWrapper) return;
-
-                    // Ocultar acciones
-                    const thActions = document.querySelector('th:last-child');
-                    const originalThDisplay = thActions ? thActions.style.display : '';
-                    if (thActions) thActions.style.display = 'none';
-
-                    const tdActions = document.querySelectorAll('td:last-child');
-                    const originalTdDisplays = [];
-                    tdActions.forEach(td => {
-                        originalTdDisplays.push(td.style.display);
-                        td.style.display = 'none';
-                    });
-
-                    try {
-                        const canvas = await html2canvas(tableWrapper, {
-                            backgroundColor: '#07111f',
-                            scale: 2
-                        });
-                        const imgData = canvas.toDataURL('image/png');
-                        const a = document.createElement('a');
-                        a.href = imgData;
-                        a.download = 'usuarios_tabla.png';
-                        a.click();
-                    } catch (err) {
-                        console.error('Error exportando PNG:', err);
-                        alert('No se pudo generar la imagen.');
-                    } finally {
-                        if (thActions) thActions.style.display = originalThDisplay;
-                        tdActions.forEach((td, i) => {
-                            td.style.display = originalTdDisplays[i];
-                        });
-                    }
+                    showToast('Excel exportado exitosamente');
                 });
             }
 
