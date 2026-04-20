@@ -42,15 +42,38 @@ async function saveImage(dataUrl, subdir) {
     // Determine if we're running in a serverless/read-only deployment.
     const isServerlessEnvironment = (process.env.VERCEL === '1') || !!process.env.FUNCTIONS_WORKER_RUNTIME || !!process.env.AWS_REGION || (process.env.DISABLE_LOCAL_IMAGE_SAVE === '1');
 
-    // Intento 1: guardar localmente en ./Images/<subdir>
-    // Skip attempting to write into the deployment directory on serverless platforms
-    // (e.g. Vercel) since /var/task is usually read-only and will produce ENOENT/EPERM.
+    const buffer = Buffer.from(base64, 'base64');
+
+    // If Supabase is configured, try uploading there first (preferred).
+    if (supabase) {
+        try {
+            const bucketPath = `${subdir}/${filename}`;
+            const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET).upload(bucketPath, buffer, { contentType: mime, upsert: false });
+            if (uploadError) throw uploadError;
+            const { data: publicUrlData } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(bucketPath);
+            if (publicUrlData && publicUrlData.publicUrl) {
+                console.log(`Supabase upload success: ${publicUrlData.publicUrl}`);
+                return publicUrlData.publicUrl;
+            }
+            // If SDK didn't return publicUrl, try to construct one (common Supabase pattern)
+            if (process.env.SUPABASE_URL) {
+                const base = process.env.SUPABASE_URL.replace(/\/$/, '');
+                return `${base}/storage/v1/object/public/${SUPABASE_BUCKET}/${bucketPath.split('/').map(encodeURIComponent).join('/')}`;
+            }
+            return null;
+        } catch (err) {
+            console.warn(`Supabase upload failed for ${subdir}:`, err && err.message ? err.message : err);
+            // fallthrough to local/tmp save
+        }
+    }
+
+    // Next, attempt to save locally when not running in a serverless/read-only environment
     if (!isServerlessEnvironment) {
         try {
             const destDir = path.join(__dirname, 'Images', subdir);
             fs.mkdirSync(destDir, { recursive: true });
             const filepath = path.join(destDir, filename);
-            fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
+            fs.writeFileSync(filepath, buffer);
             return ['Images', subdir, filename].join('/');
         } catch (err) {
             console.warn(`Local image save failed for ${subdir}:`, err && err.code ? err.code + ': ' + err.message : err);
@@ -59,27 +82,12 @@ async function saveImage(dataUrl, subdir) {
         console.debug(`Skipping local image save for ${subdir} on serverless environment`);
     }
 
-    // Intento 2: subir a Supabase Storage si está configurado
-    if (supabase) {
-        try {
-            const bucketPath = `${subdir}/${filename}`;
-            const buffer = Buffer.from(base64, 'base64');
-            const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(bucketPath, buffer, { contentType: mime, upsert: false });
-            if (error) throw error;
-            const { data: publicUrlData } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(bucketPath);
-            if (publicUrlData && publicUrlData.publicUrl) return publicUrlData.publicUrl;
-            return null;
-        } catch (err) {
-            console.warn(`Supabase upload failed for ${subdir}:`, err && err.message ? err.message : err);
-        }
-    }
-
-    // Intento 3: guardar en tmpdir como último recurso
+    // Last-resort: write to tmpdir
     try {
         const tmpDir = path.join(os.tmpdir(), 'entorno_pruebas_images', subdir);
         fs.mkdirSync(tmpDir, { recursive: true });
         const tmpPath = path.join(tmpDir, filename);
-        fs.writeFileSync(tmpPath, Buffer.from(base64, 'base64'));
+        fs.writeFileSync(tmpPath, buffer);
         return tmpPath;
     } catch (err) {
         console.warn('Fallback to tmpdir failed:', err && err.code ? err.code + ': ' + err.message : err);
@@ -512,6 +520,62 @@ app.post('/api/conferencias', requireRole('administrador'), async (req, res) => 
     } catch (err) {
         console.error('Error creating conferencia:', err);
         res.status(500).json({ error: 'Error al crear conferencia' });
+    }
+});
+
+// Get single conference
+app.get('/api/conferencias/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    try {
+        const row = await qOne('SELECT * FROM conferencias WHERE id = ?', [id]);
+        if (!row) return res.status(404).json({ error: 'Conferencia no encontrada' });
+        res.json(row);
+    } catch (err) {
+        console.error('Error getting conferencia:', err);
+        res.status(500).json({ error: 'Error' });
+    }
+});
+
+// Update conference
+app.put('/api/conferencias/:id', requireRole('administrador'), async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    const { titulo, fecha, lugar, descripcion, ponente_nombre, ponente_profesion, imageData } = req.body || {};
+    if (!titulo || !fecha || !lugar) return res.status(400).json({ error: 'Título, fecha y lugar son requeridos' });
+
+    try {
+        let fotoEventoPath = null;
+        if (imageData) {
+            try {
+                fotoEventoPath = await saveImage(imageData, 'eventos');
+            } catch (err) {
+                console.warn('No se pudo guardar la imagen del evento (update):', err && err.message ? err.message : err);
+                fotoEventoPath = null;
+            }
+        }
+
+        const params = [titulo.trim(), fecha, lugar.trim(), descripcion || null, ponente_nombre || null, ponente_profesion || null, fotoEventoPath, id];
+        if (dbLib.usePg) {
+            // If fotoEventoPath is null, we should avoid overwriting existing foto_evento with null.
+            if (fotoEventoPath === null) {
+                await dbLib.run('UPDATE conferencias SET titulo = ?, fecha = ?, lugar = ?, descripcion = ?, ponente_nombre = ?, ponente_profesion = ? WHERE id = ?', [titulo.trim(), fecha, lugar.trim(), descripcion || null, ponente_nombre || null, ponente_profesion || null, id]);
+            } else {
+                await dbLib.run('UPDATE conferencias SET titulo = ?, fecha = ?, lugar = ?, descripcion = ?, ponente_nombre = ?, ponente_profesion = ?, foto_evento = ? WHERE id = ?', params);
+            }
+            res.json({ ok: true });
+        } else {
+            if (fotoEventoPath === null) {
+                await runSql('UPDATE conferencias SET titulo = ?, fecha = ?, lugar = ?, descripcion = ?, ponente_nombre = ?, ponente_profesion = ? WHERE id = ?', [titulo.trim(), fecha, lugar.trim(), descripcion || null, ponente_nombre || null, ponente_profesion || null, id]);
+            } else {
+                await runSql('UPDATE conferencias SET titulo = ?, fecha = ?, lugar = ?, descripcion = ?, ponente_nombre = ?, ponente_profesion = ?, foto_evento = ? WHERE id = ?', params);
+            }
+            saveDb();
+            res.json({ ok: true });
+        }
+    } catch (err) {
+        console.error('Error updating conferencia:', err);
+        res.status(500).json({ error: 'Error al actualizar conferencia' });
     }
 });
 

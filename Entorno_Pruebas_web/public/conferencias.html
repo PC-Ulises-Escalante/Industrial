@@ -204,11 +204,13 @@
 
                     // Primero obtener mis inscripciones para marcar las ya inscritas
                     let misInscripciones = [];
+                    let isAdmin = false;
                     try {
                         const sessionRes = await apiFetch('/api/session');
                         if (sessionRes.ok) {
                             const session = await sessionRes.json();
                             if (session.user) {
+                                isAdmin = (session.user.rol === 'administrador');
                                 const inscRes = await apiFetch(`/api/conferencias/inscripciones/${session.user.id}`);
                                 if (inscRes.ok) {
                                     misInscripciones = await inscRes.json();
@@ -231,7 +233,9 @@
                             }
                         } catch (e) { /* fallback to '—' */ }
                         const yaInscrito = misInscripciones.some(i => i.conferencia_id === c.id);
-                        const eventoImg = c.foto_evento && !c.foto_evento.startsWith('/tmp') ? escapeHtml(c.foto_evento) : null;
+                        // Don't use escapeHtml on URLs — it converts & to &amp; breaking Supabase query params
+                        const rawFotoUrl = c.foto_evento && !c.foto_evento.startsWith('/tmp') ? c.foto_evento : null;
+                        const eventoImg = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/')) ? rawFotoUrl : null;
                         return `
                             <div class="conferencia-card glass">
                                 ${eventoImg ? `<img src="${eventoImg}" alt="${escapeHtml(c.titulo)}" style="width:100%;height:180px;object-fit:cover;border-radius:12px 12px 0 0;margin:-24px -24px 16px -24px;width:calc(100% + 48px);">` : ''}
@@ -251,7 +255,8 @@
                                     </div>
                                 </div>` : ''}
                                 <p class="conferencia-desc">${escapeHtml(c.descripcion || '')}</p>
-                                <div class="conferencia-actions">
+                                <div class="conferencia-actions" style="display:flex;gap:12px;align-items:center;">
+                                    ${isAdmin ? `<button class="table-btn btn-edit-conferencia" data-id="${c.id}" style="padding:6px 10px;border-radius:8px;background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.15);color:var(--cyan);">Editar</button>` : ''}
                                     <span class="inscritos-badge">${c.inscritos || 0} inscritos</span>
                                     <button class="btn-inscribirse ${yaInscrito ? 'btn-inscrito' : ''}" data-id="${c.id}" ${yaInscrito ? 'disabled' : ''}>
                                         ${yaInscrito ? 'Ya inscrito' : 'Inscribirse'}
@@ -263,6 +268,7 @@
 
                     // Attach listeners for dynamic buttons
                     attachInscripcionButtons();
+                    attachEditButtons();
 
                     // Fade-in animation
                     const cards = document.querySelectorAll(".conferencia-card");
@@ -288,6 +294,158 @@
                     console.warn('Usando contenido estático si existe');
                     attachInscripcionButtons();
                 }
+            }
+
+            function attachEditButtons() {
+                document.querySelectorAll('.btn-edit-conferencia').forEach(btn => {
+                    if (btn.dataset.editListener) return;
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-id');
+                        try {
+                            const res = await apiFetch(`/api/conferencias/${id}`);
+                            if (!res.ok) return alert('No fue posible obtener la conferencia');
+                            const conf = await res.json();
+
+                            // build edit modal
+                            const overlay = document.createElement('div');
+                            overlay.className = 'modal-overlay active';
+                            overlay.style.zIndex = '2200';
+                            overlay.innerHTML = `
+                                <div class="modal-card glass" role="dialog" aria-modal="true">
+                                    <button type="button" class="modal-close" aria-label="Cerrar">×</button>
+                                    <h3 style="margin:0 0 12px 0">Editar Conferencia</h3>
+                                    <form id="edit-conferencia-form" class="add-conferencia-form">
+                                        <div class="form-group">
+                                            <label>Título</label>
+                                            <input id="edit-conf-titulo" type="text" required />
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group" style="flex:1">
+                                                <label>Fecha</label>
+                                                <input id="edit-conf-fecha" type="date" required />
+                                            </div>
+                                            <div class="form-group" style="flex:1">
+                                                <label>Lugar</label>
+                                                <input id="edit-conf-lugar" type="text" required />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Descripción</label>
+                                            <textarea id="edit-conf-descripcion" rows="3"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Foto del evento (opcional)</label>
+                                            <input id="edit-conf-image" type="file" accept="image/*" />
+                                            <div class="image-preview" id="edit-conf-image-preview" style="margin-top:8px;display:none;">
+                                                <img id="edit-conf-image-preview-img" style="max-width:200px;max-height:150px;border-radius:8px;" />
+                                                <button type="button" id="edit-conf-image-remove" style="margin-left:8px;padding:4px 8px;background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);border-radius:4px;cursor:pointer;">Eliminar</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group" style="flex:1">
+                                                <label>Ponente (nombre)</label>
+                                                <input id="edit-conf-ponente-nombre" type="text" />
+                                            </div>
+                                            <div class="form-group" style="flex:1">
+                                                <label>Profesión del ponente</label>
+                                                <input id="edit-conf-ponente-profesion" type="text" />
+                                            </div>
+                                        </div>
+                                        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;">
+                                            <button type="button" id="edit-conf-cancel" class="table-btn">Cancelar</button>
+                                            <button type="submit" class="registro-submit">Guardar cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            `;
+                            document.body.appendChild(overlay);
+
+                            const imageInput = overlay.querySelector('#edit-conf-image');
+                            const imagePreview = overlay.querySelector('#edit-conf-image-preview');
+                            const imagePreviewImg = overlay.querySelector('#edit-conf-image-preview-img');
+                            const imageRemoveBtn = overlay.querySelector('#edit-conf-image-remove');
+                            const closeBtn = overlay.querySelector('.modal-close');
+                            const cancelBtn = overlay.querySelector('#edit-conf-cancel');
+
+                            // populate fields
+                            overlay.querySelector('#edit-conf-titulo').value = conf.titulo || '';
+                            overlay.querySelector('#edit-conf-fecha').value = (conf.fecha ? String(conf.fecha).split('T')[0] : '');
+                            overlay.querySelector('#edit-conf-lugar').value = conf.lugar || '';
+                            overlay.querySelector('#edit-conf-descripcion').value = conf.descripcion || '';
+                            overlay.querySelector('#edit-conf-ponente-nombre').value = conf.ponente_nombre || '';
+                            overlay.querySelector('#edit-conf-ponente-profesion').value = conf.ponente_profesion || '';
+                            let editImageData = null;
+                            if (conf.foto_evento) {
+                                imagePreviewImg.src = conf.foto_evento;
+                                imagePreview.style.display = 'block';
+                            }
+
+                            const closeOverlay = () => { overlay.remove(); document.body.style.overflow = ''; };
+                            closeBtn.addEventListener('click', closeOverlay);
+                            cancelBtn.addEventListener('click', closeOverlay);
+                            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+                            document.addEventListener('keydown', function onKey(e) { if (e.key === 'Escape') { closeOverlay(); document.removeEventListener('keydown', onKey); } });
+
+                            imageInput.addEventListener('change', () => {
+                                const file = imageInput.files[0];
+                                if (!file) return;
+                                if (!file.type.startsWith('image/')) { alert('Por favor selecciona un archivo de imagen'); return; }
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                    editImageData = e.target.result;
+                                    imagePreviewImg.src = editImageData;
+                                    imagePreview.style.display = 'block';
+                                };
+                                reader.readAsDataURL(file);
+                            });
+
+                            imageRemoveBtn.addEventListener('click', () => {
+                                editImageData = null;
+                                imagePreview.style.display = 'none';
+                                imagePreviewImg.src = '';
+                                imageInput.value = '';
+                            });
+
+                            const formEl = overlay.querySelector('#edit-conferencia-form');
+                            formEl.addEventListener('submit', async (ev) => {
+                                ev.preventDefault();
+                                const payload = {
+                                    titulo: overlay.querySelector('#edit-conf-titulo').value.trim(),
+                                    fecha: overlay.querySelector('#edit-conf-fecha').value,
+                                    lugar: overlay.querySelector('#edit-conf-lugar').value.trim(),
+                                    descripcion: overlay.querySelector('#edit-conf-descripcion').value.trim(),
+                                    ponente_nombre: overlay.querySelector('#edit-conf-ponente-nombre').value.trim() || null,
+                                    ponente_profesion: overlay.querySelector('#edit-conf-ponente-profesion').value.trim() || null
+                                };
+                                if (!payload.titulo || !payload.fecha || !payload.lugar) return alert('Título, fecha y lugar son requeridos');
+                                if (editImageData) payload.imageData = editImageData;
+
+                                try {
+                                    const upd = await apiFetch(`/api/conferencias/${id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(payload)
+                                    });
+                                    if (!upd.ok) {
+                                        const err = await upd.json().catch(()=>({}));
+                                        return alert(err.error || 'Error al actualizar conferencia');
+                                    }
+                                    closeOverlay();
+                                    await loadConferencias();
+                                    alert('Conferencia actualizada');
+                                } catch (err) {
+                                    console.error(err);
+                                    alert('Error de conexión');
+                                }
+                            });
+
+                        } catch (err) {
+                            console.error('Edit click error', err);
+                            alert('Error al abrir el editor');
+                        }
+                    });
+                    btn.dataset.editListener = '1';
+                });
             }
 
             // initial load
