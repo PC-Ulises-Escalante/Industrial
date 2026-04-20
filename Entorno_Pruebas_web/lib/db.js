@@ -171,6 +171,15 @@ async function initDb() {
                 scanned_at TIMESTAMPTZ DEFAULT now(),
                 UNIQUE(proyecto_id, user_id)
             );`);
+            // Migrations: add columns that may be missing from older table versions.
+            // These are safe to run repeatedly — they silently no-op if the column already exists.
+            const migrations = [
+                `ALTER TABLE conferencias ADD COLUMN IF NOT EXISTS foto_evento TEXT`,
+                `ALTER TABLE conferencias ADD COLUMN IF NOT EXISTS ponente_foto TEXT`,
+            ];
+            for (const sql of migrations) {
+                try { await client.query(sql); } catch (e) { /* column already exists, ignore */ }
+            }
         } finally {
             await endSingleClient(client);
         }
