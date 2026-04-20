@@ -401,7 +401,7 @@
                 setTimeout(() => toast.classList.remove('show'), 3000);
             }
 
-            // EXPORT TO PDF
+// EXPORT TO PDF
             const btnPdf = document.getElementById('btn-export-pdf');
             if (btnPdf) {
                 btnPdf.addEventListener('click', async () => {
@@ -409,13 +409,15 @@
                     const doc = new jsPDF();
 
                     const logoUrl = '/Semana.png';
-                    let logoData = null;
+                    let logoBase64 = null;
                     try {
                         const logoRes = await fetch(logoUrl);
+                        if (!logoRes.ok) throw new Error('Logo not found');
                         const logoBlob = await logoRes.blob();
-                        logoData = await new Promise(resolve => {
+                        logoBase64 = await new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
                             reader.readAsDataURL(logoBlob);
                         });
                     } catch (e) { console.warn('Logo no disponible', e); }
@@ -423,7 +425,6 @@
                     const now = new Date();
                     const fechaHora = now.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' }) +
                         '  |  ' + now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-
                     const primaryColor = [37, 99, 235];
                     const headerBg = [15, 23, 42];
 
@@ -443,15 +444,15 @@
                     ]);
 
                     function addHeader(doc, startY) {
-                        if (logoData) {
-                            doc.addImage(logoData, 'PNG', 15, startY, 28, 28);
+                        if (logoBase64) {
+                            try { doc.addImage(logoBase64, 'PNG', 15, startY, 28, 28); } catch (e) {}
                         }
                         doc.setFontSize(18);
                         doc.setFont('helvetica', 'bold');
                         doc.setTextColor(255, 255, 255);
                         doc.rect(15, startY, 180, 28, 'F');
-                        if (logoData) {
-                            doc.addImage(logoData, 'PNG', 15, startY, 28, 28);
+                        if (logoBase64) {
+                            try { doc.addImage(logoBase64, 'PNG', 15, startY, 28, 28); } catch (e) {}
                             doc.setTextColor(255, 255, 255);
                             doc.setFontSize(16);
                             doc.setFont('helvetica', 'bold');
@@ -475,7 +476,7 @@
                         doc.text('Fecha y hora de generación: ' + fechaHora, 15, y);
                     }
 
-                    // --- SECTION 1: ALUMNOS ---
+                    // SECTION 1: ALUMNOS
                     addHeader(doc, 14);
                     let currentY = 50;
                     addFechaHora(doc, currentY);
@@ -515,8 +516,10 @@
                         columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 35 }, 2: { cellWidth: 45 }, 3: { cellWidth: 20 }, 4: { cellWidth: 20 }, 5: { cellWidth: 25 }, 6: { cellWidth: 12 }, 7: { cellWidth: 22 }, 8: { cellWidth: 25 } }
                     });
 
-                    // --- SECTION 2: EQUIPOS DEPORTES ---
+                    // SECTION 2: EQUIPOS DEPORTES
                     if (doc.lastAutoTable) currentY = doc.lastAutoTable.finalY + 10;
+                    addHeader(doc, currentY);
+                    currentY += 36;
                     doc.setFontSize(14);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -552,8 +555,10 @@
                         columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 30 }, 2: { cellWidth: 25 }, 3: { cellWidth: 22 }, 4: { cellWidth: 20 }, 5: { cellWidth: 20 }, 6: { cellWidth: 25 }, 7: { cellWidth: 20 }, 8: { cellWidth: 25 } }
                     });
 
-                    // --- SECTION 3: PROYECTOS ---
+                    // SECTION 3: PROYECTOS
                     if (doc.lastAutoTable) currentY = doc.lastAutoTable.finalY + 10;
+                    addHeader(doc, currentY);
+                    currentY += 36;
                     doc.setFontSize(14);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -589,8 +594,10 @@
                         columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 28 }, 2: { cellWidth: 22 }, 3: { cellWidth: 35 }, 4: { cellWidth: 20 }, 5: { cellWidth: 25 }, 6: { cellWidth: 18 }, 7: { cellWidth: 18 }, 8: { cellWidth: 24 } }
                     });
 
-                    // --- SECTION 4: CONFERENCIAS ---
+                    // SECTION 4: CONFERENCIAS
                     if (doc.lastAutoTable) currentY = doc.lastAutoTable.finalY + 10;
+                    addHeader(doc, currentY);
+                    currentY += 36;
                     doc.setFontSize(14);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -627,7 +634,7 @@
                     });
 
                     const fechaStr = now.toISOString().split('T')[0];
-                    doc.save(`reporte_semana_academica_${fechaStr}.pdf`);
+                    doc.save('reporte_semana_academica_' + fechaStr + '.pdf');
                     showToast('PDF exportado exitosamente');
                 });
             }
@@ -641,16 +648,16 @@
                     workbook.created = new Date();
 
                     const logoUrl = '/Semana.png';
-                    let logoData = null;
+                    let logoBase64 = null;
                     try {
                         const logoRes = await fetch(logoUrl);
+                        if (!logoRes.ok) throw new Error('Logo not found');
                         const logoBlob = await logoRes.blob();
-                        logoData = await new Promise(resolve => {
-                            return new Promise(resolve2 => {
-                                const reader = new FileReader();
-                                reader.onload = () => resolve2(reader.result);
-                                reader.readAsDataURL(logoBlob);
-                            });
+                        logoBase64 = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(logoBlob);
                         });
                     } catch (e) { console.warn('Logo no disponible', e); }
 
@@ -674,8 +681,8 @@
                     ]);
 
                     function addLogoToSheet(sheet, title, subtitle) {
-                        if (logoData) {
-                            sheet.addImage(logoData, { tl: { x: 0, y: 0 }, ext: { width: 80, height: 80 } });
+                        if (logoBase64) {
+                            try { sheet.addImage(logoBase64, { tl: { x: 0, y: 0 }, ext: { width: 80, height: 80 } }); } catch (e) {}
                         }
                         sheet.mergeCells('A:I');
                         const titleCell = sheet.getCell('A1');
@@ -699,13 +706,6 @@
                         dateCell.font = { name: 'Calibri', size: 9, color: { argb: 'FF64748b' } };
                         dateCell.alignment = { horizontal: 'center' };
                         sheet.getRow(3).height = 16;
-
-                        if (logoData) {
-                            sheet.addImage(logoData, { tl: { x: 0, y: 0 }, ext: { width: 80, height: 80 } });
-                            const imgCell = sheet.getCell('J1');
-                            imgCell.value = '';
-                            sheet.mergeCells('J1:K3');
-                        }
                     }
 
                     // HOJA 1: ALUMNOS
@@ -845,7 +845,7 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `reporte_semana_academica_${fechaStr}.xlsx`;
+                    a.download = 'reporte_semana_academica_' + fechaStr + '.xlsx';
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
