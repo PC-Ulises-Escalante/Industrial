@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -79,6 +79,15 @@
                 </div>
                 <div class="stat-number" id="stat-staff">0</div>
                 <div class="stat-label">Staff</div>
+            </div>
+            <!-- Credito Complementario -->
+            <div class="stat-card" data-accent="amber">
+                <div class="stat-card-glow"></div>
+                <div class="stat-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="stat-number" id="stat-credito" style="display:flex; align-items:baseline; gap:8px;">0 <span style="font-size:1rem; font-weight:normal; color:var(--slate-400);" id="stat-credito-pct">(0%)</span></div>
+                <div class="stat-label">Con Crédito Asignado</div>
             </div>
         </div>
     </section>
@@ -279,6 +288,30 @@
             document.getElementById('stat-alumnos').textContent = stats.alumnos;
             document.getElementById('stat-invitados').textContent = stats.invitados;
             document.getElementById('stat-staff').textContent = stats.maestros;
+
+            // Fetch users for Credito Complementario count
+            try {
+                const uRes = await apiFetch('/api/users');
+                if (uRes.ok) {
+                    const usersList = await uRes.json();
+                    let conCredito = 0;
+                    let numAlumnos = 0;
+                    usersList.forEach(u => {
+                        if (u.rol === 'alumno') {
+                            numAlumnos++;
+                            if (u.credito_complementario === true) conCredito++;
+                        }
+                    });
+                    const statCredito = document.getElementById('stat-credito');
+                    const pctCredito = document.getElementById('stat-credito-pct');
+                    
+                    if (statCredito && pctCredito) {
+                        statCredito.childNodes[0].nodeValue = conCredito + " "; // Actualizamos el texto descartando el childNode
+                        const pct = numAlumnos > 0 ? Math.round((conCredito / numAlumnos) * 100) : 0;
+                        pctCredito.textContent = `(${pct}%)`;
+                    }
+                }
+            } catch (e) { console.error('Error calculando créditos:', e); }
 
             // Recent table
             const tbody = document.getElementById('recent-table-body');

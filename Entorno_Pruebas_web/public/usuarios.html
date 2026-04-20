@@ -11,6 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -85,6 +86,16 @@
                 <option value="12">Semestre 12</option>
             </select>
             <span class="filter-count" id="filter-count">0 usuarios</span>
+            <div style="display:flex; gap:10px; margin-left:auto;">
+                <button id="btn-export-csv" class="btn-registrar" style="padding:8px 16px; background:#10b981; color:#fff; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Exportar CSV
+                </button>
+                <button id="btn-export-png" class="btn-registrar" style="padding:8px 16px; background:#8b5cf6; color:#fff; border-radius:8px; border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Exportar PNG
+                </button>
+            </div>
         </div>
     </section>
 
@@ -384,6 +395,102 @@
                 toast.classList.toggle('error', !!isError);
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            // EXPORT TO CSV
+            const btnCsv = document.getElementById('btn-export-csv');
+            if(btnCsv) {
+                btnCsv.addEventListener('click', () => {
+                    const trs = document.querySelectorAll('#users-table-body tr');
+                    if (trs.length === 0 || (trs.length === 1 && trs[0].querySelector('.admin-empty'))) {
+                        return alert('No hay datos para exportar.');
+                    }
+
+                    const removeAccents = (str) => {
+                        if (!str) return '';
+                        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    };
+
+                    const rows = [];
+                    // Header
+                    rows.push(['ID', 'Nombre', 'Email', 'Rol', 'Horario', 'Num_Control', 'Semestre', 'Credito_Complementario', 'Registro'].join(','));
+
+                    trs.forEach(tr => {
+                        const tds = tr.querySelectorAll('td');
+                        if (tds.length >= 9) {
+                            const id = tds[0].textContent.trim();
+                            const nombre = removeAccents(tds[1].textContent.trim()).replace(/,/g, '');
+                            const email = removeAccents(tds[2].textContent.trim() === '—' ? '' : tds[2].textContent.trim());
+                            const rol = tds[3].textContent.trim();
+                            const horario = removeAccents(tds[4].textContent.trim());
+                            const num = tds[5].textContent.trim() === '—' ? '' : tds[5].textContent.trim();
+                            const sem = tds[6].textContent.trim() === '—' ? '' : tds[6].textContent.trim();
+                            
+                            // Check if credito is 'x' or 'check' icon
+                            let cred = 'No';
+                            const svgStr = tds[7].innerHTML;
+                            if(svgStr.includes('10 18')) cred = 'Si'; // the check SVG has path M9 12l2 2 4-4 or polyline 20 6 9 17 4 12
+                            else if(svgStr.includes('Sí')) cred = 'Si'; // inside badge
+                            else if(tds[7].textContent.trim().toLowerCase() === 'sí') cred = 'Si';
+                            
+                            const reg = tds[8].textContent.trim().replace(/,/g, ' ');
+
+                            rows.push([id, nombre, email, rol, horario, num, sem, cred, reg].join(','));
+                        }
+                    });
+
+                    const csvContent = rows.join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'usuarios_export.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+            }
+
+            // EXPORT TO PNG
+            const btnPng = document.getElementById('btn-export-png');
+            if(btnPng) {
+                btnPng.addEventListener('click', async () => {
+                    const tableWrapper = document.querySelector('.admin-table-wrapper');
+                    if (!tableWrapper) return;
+
+                    // Ocultar acciones
+                    const thActions = document.querySelector('th:last-child');
+                    const originalThDisplay = thActions ? thActions.style.display : '';
+                    if (thActions) thActions.style.display = 'none';
+
+                    const tdActions = document.querySelectorAll('td:last-child');
+                    const originalTdDisplays = [];
+                    tdActions.forEach(td => {
+                        originalTdDisplays.push(td.style.display);
+                        td.style.display = 'none';
+                    });
+
+                    try {
+                        const canvas = await html2canvas(tableWrapper, {
+                            backgroundColor: '#07111f',
+                            scale: 2
+                        });
+                        const imgData = canvas.toDataURL('image/png');
+                        const a = document.createElement('a');
+                        a.href = imgData;
+                        a.download = 'usuarios_tabla.png';
+                        a.click();
+                    } catch (err) {
+                        console.error('Error exportando PNG:', err);
+                        alert('No se pudo generar la imagen.');
+                    } finally {
+                        if (thActions) thActions.style.display = originalThDisplay;
+                        tdActions.forEach((td, i) => {
+                            td.style.display = originalTdDisplays[i];
+                        });
+                    }
+                });
             }
 
             init();
