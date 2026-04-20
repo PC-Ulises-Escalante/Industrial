@@ -133,7 +133,7 @@ module.exports = async function (req, res) {
                                             if (!done) { done = true; resolve(); }
                                         }
                                         // Fallback: resolve after 2s even if close callback never fires
-                                        setTimeout(() => { if (!done) { try { if (srv && typeof srv.close === 'function') { try { srv.close(() => {}); } catch (e) { /* ignore */ } } } finally { done = true; resolve(); } }, 2000);
+                                        setTimeout(() => { if (!done) { try { if (srv && typeof srv.close === 'function') { try { srv.close(() => {}); } catch (e) { /* ignore */ } } } finally { done = true; resolve(); } } }, 2000);
                                     });
                                     console.log('[api] closed Server handle (or timed out)');
                                 } catch (e) {
