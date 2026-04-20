@@ -159,14 +159,27 @@ async function initDb() {
                 scanned_at TIMESTAMPTZ DEFAULT now(),
                 UNIQUE(proyecto_id, user_id)
             );`);
+
+            await client.query(`CREATE TABLE IF NOT EXISTS embellecimiento (
+                id SERIAL PRIMARY KEY,
+                actividad TEXT NOT NULL,
+                descripcion TEXT,
+                profesor_responsable TEXT NOT NULL,
+                que_hizo TEXT NOT NULL,
+                foto_evidencia TEXT,
+                user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
+
             // Migrations: add columns that may be missing from older table versions.
             // These are safe to run repeatedly — they silently no-op if the column already exists.
             const migrations = [
                 `ALTER TABLE conferencias ADD COLUMN IF NOT EXISTS foto_evento TEXT`,
                 `ALTER TABLE conferencias ADD COLUMN IF NOT EXISTS ponente_foto TEXT`,
+                `CREATE TABLE IF NOT EXISTS embellecimiento (id SERIAL PRIMARY KEY, actividad TEXT NOT NULL, descripcion TEXT, profesor_responsable TEXT NOT NULL, que_hizo TEXT NOT NULL, foto_evidencia TEXT, user_id INTEGER REFERENCES users(id), created_at TIMESTAMPTZ DEFAULT now())`,
             ];
             for (const sql of migrations) {
-                try { await client.query(sql); } catch (e) { /* column already exists, ignore */ }
+                try { await client.query(sql); } catch (e) { /* column already exists or table exists, ignore */ }
             }
         } finally {
             await endSingleClient(client);
@@ -334,6 +347,17 @@ async function initDb() {
             qr_token TEXT,
             scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(proyecto_id, user_id)
+        );`);
+
+        db.exec(`CREATE TABLE IF NOT EXISTS embellecimiento (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            actividad TEXT NOT NULL,
+            descripcion TEXT,
+            profesor_responsable TEXT NOT NULL,
+            que_hizo TEXT NOT NULL,
+            foto_evidencia TEXT,
+            user_id INTEGER REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );`);
 
         saveDb();

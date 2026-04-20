@@ -4,7 +4,6 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() === '') {
     process.env.DATABASE_URL = '';
 }
 const express = require('express');
-const initSqlJs = require('sql.js');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
@@ -74,7 +73,8 @@ async function saveImage(dataUrl, subdir) {
             fs.mkdirSync(destDir, { recursive: true });
             const filepath = path.join(destDir, filename);
             fs.writeFileSync(filepath, buffer);
-            return ['Images', subdir, filename].join('/');
+            // Return an absolute URL path so the browser can load it (express.static serves __dirname)
+            return '/' + path.posix.join('Images', subdir, filename);
         } catch (err) {
             console.warn(`Local image save failed for ${subdir}:`, err && err.code ? err.code + ': ' + err.message : err);
         }
@@ -82,13 +82,24 @@ async function saveImage(dataUrl, subdir) {
         console.debug(`Skipping local image save for ${subdir} on serverless environment`);
     }
 
-    // Last-resort: write to tmpdir
+    // Last-resort: try to write into Images from tmpdir then return web path
     try {
         const tmpDir = path.join(os.tmpdir(), 'entorno_pruebas_images', subdir);
         fs.mkdirSync(tmpDir, { recursive: true });
         const tmpPath = path.join(tmpDir, filename);
         fs.writeFileSync(tmpPath, buffer);
-        return tmpPath;
+        // Attempt to copy into web-accessible Images folder
+        try {
+            const destDir = path.join(__dirname, 'Images', subdir);
+            fs.mkdirSync(destDir, { recursive: true });
+            const destPath = path.join(destDir, filename);
+            fs.copyFileSync(tmpPath, destPath);
+            return '/' + path.posix.join('Images', subdir, filename);
+        } catch (copyErr) {
+            console.warn('Could not copy tmp image into Images folder:', copyErr && copyErr.message ? copyErr.message : copyErr);
+            // As a last fallback, do not return an absolute filesystem path (browser cannot access it)
+            return null;
+        }
     } catch (err) {
         console.warn('Fallback to tmpdir failed:', err && err.code ? err.code + ': ' + err.message : err);
         return null;
@@ -1201,6 +1212,66 @@ app.get('/api/proyectos/:id/asistencias', requireRole('administrador', 'maestro'
             ORDER BY ap.scanned_at DESC
         `, [proyectoId]);
         res.json({ proyecto_id: proyectoId, total_asistencias: asistencias.length, asistencias });
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Error' }); }
+});
+
+/* ── Embellecimiento Industrial ── */
+app.get('/api/embellecimiento', async (req, res) => {
+    try {
+        const rows = await qAll(`
+            SELECT e.*, u.nombre as alumno_nombre, u.email as alumno_email
+            FROM embellecimiento e
+            LEFT JOIN users u ON e.user_id = u.id
+            ORDER BY e.created_at DESC
+        `);
+        res.json(rows);
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Error' }); }
+});
+
+app.post('/api/embellecimiento', async (req, res) => {
+    const currentUser = req.user || (req.session && req.session.user) || req.jwtUser;
+    if (!currentUser) return res.status(401).json({ error: 'Debes iniciar sesión' });
+
+    const { actividad, descripcion, profesor_responsable, que_hizo, imageData } = req.body;
+    if (!actividad || !profesor_responsable || !que_hizo) {
+        return res.status(400).json({ error: 'Actividad, profesor responsable y descripción de lo realizado son requeridos' });
+    }
+
+    let fotoPath = null;
+    if (imageData) {
+        try {
+            fotoPath = await saveImage(imageData, 'embellecimiento');
+        } catch (err) {
+            if (err && err.message === 'Formato de imagen inválido') return res.status(400).json({ error: 'Formato de imagen inválido' });
+            console.warn('No se pudo guardar la imagen de embellecimiento:', err && err.message ? err.message : err);
+            fotoPath = null;
+        }
+    }
+
+    try {
+        const params = [actividad.trim(), descripcion ? descripcion.trim() : null, profesor_responsable.trim(), que_hizo.trim(), fotoPath, currentUser.id];
+        if (dbLib.usePg) {
+            const inserted = await dbLib.queryOne('INSERT INTO embellecimiento (actividad, descripcion, profesor_responsable, que_hizo, foto_evidencia, user_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id', params);
+            res.json({ id: inserted ? inserted.id : null, ok: true });
+        } else {
+            await runSql('INSERT INTO embellecimiento (actividad, descripcion, profesor_responsable, que_hizo, foto_evidencia, user_id) VALUES (?, ?, ?, ?, ?, ?)', params);
+            const newRow = await qOne('SELECT last_insert_rowid() as id');
+            saveDb();
+            res.json({ id: newRow ? newRow.id : null, ok: true });
+        }
+    } catch (err) {
+        console.error('Error creating embellecimiento:', err);
+        res.status(500).json({ error: 'Error al registrar actividad' });
+    }
+});
+
+app.delete('/api/embellecimiento/:id', requireRole('administrador'), async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    try {
+        if (dbLib.usePg) await dbLib.run('DELETE FROM embellecimiento WHERE id = ?', [id]);
+        else { await runSql('DELETE FROM embellecimiento WHERE id = ?', [id]); saveDb(); }
+        res.json({ ok: true });
     } catch (err) { console.error(err); res.status(500).json({ error: 'Error' }); }
 });
 

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embellecimiento Industrial — Semana Académica 2026</title>
+    <meta name="description" content="Registra tus actividades de embellecimiento y mantenimiento del Tecnológico de Tijuana durante la Semana Académica 2026.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+    .embell-hero { position: relative; padding: 120px 0 80px; text-align: center; }
+    .embell-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 100px; background: rgba(34, 197, 94, 0.08); color: var(--green); font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; border: 1px solid rgba(34, 197, 94, 0.2); }
+    .embell-title { font-size: 3.5rem; font-weight: 800; font-family: 'Sora', sans-serif; background: linear-gradient(135deg, var(--white) 0%, var(--slate-300) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 16px; line-height: 1.1; }
+    .embell-subtitle { font-size: 1.1rem; color: var(--slate-400); max-width: 650px; margin: 0 auto 40px; line-height: 1.6; }
+
+    .embell-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+
+    /* Form card */
+    .embell-form-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 32px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); margin-bottom: 48px; position: relative; overflow: hidden; }
+    .embell-form-card::before { content: ''; position: absolute; inset: 0; border-radius: 16px; background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.06), transparent 70%); pointer-events: none; }
+    .embell-form-card h2 { margin: 0 0 24px 0; color: var(--white); display: flex; align-items: center; gap: 10px; }
+    .embell-form { display: flex; flex-direction: column; gap: 18px; position: relative; z-index: 1; }
+    .embell-form .form-group { display: flex; flex-direction: column; }
+    .embell-form .form-label { font-size: 0.95rem; font-weight: 600; color: var(--slate-300); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .embell-form .form-input,
+    .embell-form .form-select,
+    .embell-form textarea { padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(148,163,184,0.06); color: var(--slate-100); font-size: 1rem; font-family: inherit; transition: border-color 0.2s; resize: vertical; }
+    .embell-form .form-input:focus,
+    .embell-form textarea:focus { outline: none; border-color: var(--green); }
+    .embell-form .form-row { display: flex; gap: 18px; }
+    .embell-form .form-row .form-group { flex: 1; }
+
+    .btn-registrar-embell { padding: 14px 28px; border-radius: 10px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: var(--white); font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: opacity 0.2s, transform 0.15s; align-self: flex-start; display: flex; align-items: center; gap: 8px; }
+    .btn-registrar-embell:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-registrar-embell:active { transform: translateY(0); }
+
+    /* Image preview */
+    .image-preview-embell { margin-top: 8px; display: none; align-items: center; gap: 12px; }
+    .image-preview-embell img { max-width: 180px; max-height: 120px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.1); }
+    .btn-remove-img { padding: 4px 10px; background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+    .btn-remove-img:hover { background: rgba(239,68,68,0.2); }
+
+    /* Activity cards grid */
+    .embell-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-top: 20px; }
+    .embell-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
+    .embell-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .embell-card-img { width: 100%; height: 180px; object-fit: cover; }
+    .embell-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .embell-card-actividad { font-size: 1.2rem; font-weight: 700; color: var(--white); margin: 0 0 6px; }
+    .embell-card-desc { font-size: 0.95rem; color: var(--slate-400); line-height: 1.5; margin: 0 0 14px; flex: 1; }
+    .embell-card-meta { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid rgba(148,163,184,0.08); }
+    .embell-meta-row { display: flex; align-items: flex-start; gap: 8px; font-size: 0.9rem; color: var(--slate-300); }
+    .embell-meta-row svg { flex-shrink: 0; margin-top: 2px; color: var(--green); }
+    .embell-meta-row strong { color: var(--white); font-weight: 600; }
+    .embell-card-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid rgba(148,163,184,0.06); }
+    .embell-card-alumno { font-size: 0.85rem; color: var(--slate-500); }
+    .embell-card-fecha { font-size: 0.8rem; color: var(--slate-600); }
+    .btn-delete-embell { background: none; border: none; color: var(--slate-500); cursor: pointer; padding: 4px; border-radius: 4px; display: none; }
+    .btn-delete-embell:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+
+    .embell-empty { text-align: center; padding: 60px 20px; color: var(--slate-500); font-size: 1rem; }
+
+    /* Login prompt */
+    .embell-login-prompt { text-align: center; padding: 40px; background: rgba(34,197,94,0.04); border: 1px dashed rgba(34,197,94,0.2); border-radius: 12px; margin-bottom: 48px; }
+    .embell-login-prompt p { color: var(--slate-400); margin: 0 0 16px; }
+    .embell-login-prompt button { padding: 10px 20px; border-radius: 8px; background: var(--green); color: var(--white); font-weight: 600; border: none; cursor: pointer; }
+
+    @media (max-width: 768px) {
+        .embell-title { font-size: 2.5rem; }
+        .embell-form .form-row { flex-direction: column; gap: 18px; }
+        .embell-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+    <!-- Particles -->
+    <div id="particles" aria-hidden="true"></div>
+    <!-- Grid background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+    <!-- Radial glows -->
+    <div class="radial-glows" aria-hidden="true"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass" id="navbar">
+        <div class="nav-links">
+            <a href="index.html#inicio" class="nav-link">Inicio</a>
+            <a href="index.html#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="ponentes.html" class="nav-link">Ponentes</a>
+            <a href="conferencias.html" class="nav-link">Conferencias</a>
+            <a href="deportes.html" class="nav-link">Deportes</a>
+            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="#" class="nav-link active">Embellecimiento</a>
+            <a href="index.html#historia" class="nav-link">Historia</a>
+            <a href="index.html#contacto" class="nav-link">Contacto</a>
+        </div>
+        <div class="nav-auth" id="nav-auth"></div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <section class="embell-hero">
+        <span class="embell-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M17.5 8c0 4.5-2.5 6-5.5 6s-5.5-1.5-5.5-6c0-3 2.5-5 5.5-5s5.5 2 5.5 5z"/><path d="M8 21h8"/></svg>
+            Embellecimiento Industrial
+        </span>
+        <h1 class="embell-title">Embellecimiento del Tec</h1>
+        <p class="embell-subtitle">Registra tus actividades de embellecimiento y mantenimiento para hacer de nuestro campus un mejor lugar. Cada acción cuenta.</p>
+    </section>
+
+    <div class="embell-container">
+        <!-- FORM (hidden until logged in) -->
+        <div id="embell-form-section" style="display:none;">
+            <div class="embell-form-card glass">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Registrar actividad
+                </h2>
+                <form id="embell-form" class="embell-form">
+                    <div class="form-group">
+                        <label class="form-label" for="embell-actividad">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            ¿Qué actividad realizarás?
+                        </label>
+                        <input id="embell-actividad" class="form-input" type="text" placeholder="Ej: Pintura de bardas, Limpieza de jardines, Reparación de bancas..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="embell-descripcion">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            Descripción adicional (opcional)
+                        </label>
+                        <textarea id="embell-descripcion" class="form-input" rows="3" placeholder="Detalles sobre la ubicación, materiales, horario, etc."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="embell-profesor">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Profesor responsable
+                            </label>
+                            <input id="embell-profesor" class="form-input" type="text" placeholder="Nombre del profesor que supervisa" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="embell-quehizo">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                ¿Qué hiciste?
+                            </label>
+                            <input id="embell-quehizo" class="form-input" type="text" placeholder="Resumen de lo que realizaste" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            Foto de evidencia (opcional)
+                        </label>
+                        <input id="embell-image" type="file" accept="image/*" class="form-input">
+                        <div class="image-preview-embell" id="embell-image-preview">
+                            <img id="embell-image-preview-img">
+                            <button type="button" id="embell-image-remove" class="btn-remove-img">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-registrar-embell">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        Registrar actividad
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LOGIN PROMPT (shown when not logged in) -->
+        <div id="embell-login-prompt" class="embell-login-prompt" style="display:none;">
+            <p>Debes iniciar sesión para registrar tu actividad de embellecimiento.</p>
+            <button onclick="if(typeof showLoginModal==='function') showLoginModal(); else alert('Inicia sesión primero');">Iniciar Sesión</button>
+        </div>
+
+        <!-- ACTIVITIES LIST -->
+        <h2 style="color: var(--white); margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M17.5 8c0 4.5-2.5 6-5.5 6s-5.5-1.5-5.5-6c0-3 2.5-5 5.5-5s5.5 2 5.5 5z"/><path d="M8 21h8"/></svg>
+            Actividades registradas
+        </h2>
+        <p style="color: var(--slate-500); margin: 0 0 24px; font-size: 0.95rem;">Todas las contribuciones de los alumnos al embellecimiento del campus.</p>
+        <div class="embell-grid" id="embell-grid">
+            <div class="embell-empty">Cargando actividades...</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer-section glass" id="contacto" style="margin-top:4rem;">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Semana Académica 2026</h3>
+                <p>Instituto Tecnológico de Tijuana<br>Ingeniería Industrial</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>semana.academica@tectijuana.edu.mx</p>
+                <p>Tijuana, Baja California, México</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">FB</a>
+                    <a href="#" class="social-link" aria-label="Instagram">IG</a>
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Semana Académica — Ingeniería Industrial ITT. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Lenis smooth scroll
+        const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 0.8 });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        // Particles
+        const particlesEl = document.getElementById("particles");
+        if (particlesEl) {
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement("div");
+                p.classList.add("particle");
+                const size = Math.random() * 3 + 2;
+                p.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--duration:${Math.random()*6+4}s;--delay:${Math.random()*4}s;`;
+                frag.appendChild(p);
+            }
+            particlesEl.appendChild(frag);
+        }
+
+        // Navbar scroll
+        const navbar = document.getElementById("navbar");
+        if (navbar) {
+            window.addEventListener("scroll", () => {
+                navbar.classList.toggle("scrolled", window.scrollY > 60);
+            }, { passive: true });
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+
+        let currentUser = null;
+        let isAdmin = false;
+
+        // Check session and show/hide form
+        async function checkAuth() {
+            try {
+                const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+                const res = await _fetch('/api/session');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user) {
+                        currentUser = data.user;
+                        isAdmin = (data.user.rol === 'administrador');
+                        document.getElementById('embell-form-section').style.display = 'block';
+                        document.getElementById('embell-login-prompt').style.display = 'none';
+                        return;
+                    }
+                }
+            } catch (e) { console.log('Auth check failed', e); }
+            document.getElementById('embell-form-section').style.display = 'none';
+            document.getElementById('embell-login-prompt').style.display = 'block';
+        }
+
+        // Image handling
+        const imageInput = document.getElementById('embell-image');
+        const imagePreview = document.getElementById('embell-image-preview');
+        const imagePreviewImg = document.getElementById('embell-image-preview-img');
+        const imageRemoveBtn = document.getElementById('embell-image-remove');
+        let imageData = null;
+
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { alert('Selecciona un archivo de imagen'); return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageData = e.target.result;
+                imagePreviewImg.src = imageData;
+                imagePreview.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        imageRemoveBtn.addEventListener('click', () => {
+            imageData = null;
+            imagePreview.style.display = 'none';
+            imagePreviewImg.src = '';
+            imageInput.value = '';
+        });
+
+        // Submit form
+        document.getElementById('embell-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+
+            const payload = {
+                actividad: document.getElementById('embell-actividad').value.trim(),
+                descripcion: document.getElementById('embell-descripcion').value.trim() || null,
+                profesor_responsable: document.getElementById('embell-profesor').value.trim(),
+                que_hizo: document.getElementById('embell-quehizo').value.trim()
+            };
+
+            if (!payload.actividad || !payload.profesor_responsable || !payload.que_hizo) {
+                return alert('Completa los campos requeridos: actividad, profesor responsable y qué hiciste.');
+            }
+
+            if (imageData) payload.imageData = imageData;
+
+            try {
+                const res = await _fetch('/api/embellecimiento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    return alert(err.error || 'Error al registrar actividad');
+                }
+                alert('Actividad registrada exitosamente');
+                document.getElementById('embell-form').reset();
+                imageData = null;
+                imagePreview.style.display = 'none';
+                imagePreviewImg.src = '';
+                loadActividades();
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión');
+            }
+        });
+
+        // Load activities
+        async function loadActividades() {
+            const grid = document.getElementById('embell-grid');
+            if (!grid) return;
+            const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+            try {
+                const res = await _fetch('/api/embellecimiento', { cache: 'no-store' });
+                if (!res.ok) { grid.innerHTML = '<div class="embell-empty">No fue posible cargar actividades</div>'; return; }
+                const actividades = await res.json();
+                if (!Array.isArray(actividades) || actividades.length === 0) {
+                    grid.innerHTML = '<div class="embell-empty">No hay actividades registradas aún. ¡Sé el primero en contribuir!</div>';
+                    return;
+                }
+
+                grid.innerHTML = actividades.map(a => {
+                    let fecha = '—';
+                    try {
+                        if (a.created_at) {
+                            const d = new Date(a.created_at);
+                            if (!isNaN(d.getTime())) fecha = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                        }
+                    } catch (e) { /* fallback */ }
+
+                    const rawFotoUrl = a.foto_evidencia && !a.foto_evidencia.startsWith('/tmp') ? a.foto_evidencia : null;
+                    const fotoUrl = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/')) ? rawFotoUrl : null;
+
+                    return `
+                        <div class="embell-card glass">
+                            ${fotoUrl ? `<img src="${fotoUrl}" alt="${escapeHtml(a.actividad)}" class="embell-card-img">` : ''}
+                            <div class="embell-card-body">
+                                <h3 class="embell-card-actividad">${escapeHtml(a.actividad)}</h3>
+                                ${a.descripcion ? `<p class="embell-card-desc">${escapeHtml(a.descripcion)}</p>` : ''}
+                                <div class="embell-card-meta">
+                                    <div class="embell-meta-row">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <span><strong>Profesor:</strong> ${escapeHtml(a.profesor_responsable)}</span>
+                                    </div>
+                                    <div class="embell-meta-row">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                        <span><strong>Realizado:</strong> ${escapeHtml(a.que_hizo)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="embell-card-footer">
+                                <span class="embell-card-alumno">${escapeHtml(a.alumno_nombre || 'Anónimo')}</span>
+                                <span class="embell-card-fecha">${escapeHtml(fecha)}</span>
+                                ${isAdmin ? `<button class="btn-delete-embell" data-id="${a.id}" style="display:inline-flex;" title="Eliminar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Delete button listeners (admin only)
+                if (isAdmin) {
+                    document.querySelectorAll('.btn-delete-embell').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            if (!confirm('¿Eliminar esta actividad?')) return;
+                            const id = btn.getAttribute('data-id');
+                            try {
+                                const res = await _fetch(`/api/embellecimiento/${id}`, { method: 'DELETE' });
+                                if (res.ok) { loadActividades(); }
+                                else { alert('Error al eliminar'); }
+                            } catch (err) { alert('Error de conexión'); }
+                        });
+                    });
+                }
+
+                // Fade-in animation
+                const cards = document.querySelectorAll(".embell-card");
+                if (cards.length && "IntersectionObserver" in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.style.opacity = "1";
+                                entry.target.style.transform = "translateY(0)";
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.15 });
+                    cards.forEach(card => {
+                        card.style.opacity = "0";
+                        card.style.transform = "translateY(30px)";
+                        card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                        observer.observe(card);
+                    });
+                }
+
+            } catch (err) {
+                console.error('Error loading embellecimiento', err);
+                grid.innerHTML = '<div class="embell-empty">Error al cargar actividades</div>';
+            }
+        }
+
+        // Init
+        checkAuth().then(() => loadActividades());
+    });
+    </script>
+    <script src="/auth.js"></script>
+</body>
+</html>
