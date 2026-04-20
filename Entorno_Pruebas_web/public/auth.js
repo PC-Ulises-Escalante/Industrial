@@ -356,6 +356,7 @@ console.debug('[auth.js] loaded');
     window.authLogout = handleLogout;
     window.showLoginModal = showLoginModal;
     window.authCheckSession = checkSession;
+    window.apiFetch = apiFetch;
 
     /* ── Init ── */
     createMobileMenu();

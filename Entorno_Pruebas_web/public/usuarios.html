@@ -136,6 +136,20 @@
             let allUsers = [];
             let currentUserRole = null;
 
+            /* ── Helper: use apiFetch from auth.js (sends JWT token), fallback to fetch ── */
+            function authFetch(url, opts) {
+                if (typeof window.apiFetch === 'function') return window.apiFetch(url, opts);
+                // Fallback: manually attach token
+                opts = Object.assign({}, opts);
+                opts.credentials = opts.credentials || 'same-origin';
+                opts.headers = opts.headers || {};
+                try {
+                    const token = localStorage.getItem('token');
+                    if (token && !opts.headers.Authorization) opts.headers.Authorization = 'Bearer ' + token;
+                } catch (e) { /* ignore */ }
+                return fetch(url, opts);
+            }
+
             /* ── Particles ── */
             const particlesEl = document.getElementById("particles");
             if (particlesEl) {
@@ -161,12 +175,12 @@
             /* ── Get current user role ── */
             async function init() {
                 try {
-                    // Use authCheckSession from auth.js if available (avoids duplicate fetch)
+                    // Wait for auth.js checkSession to finish so protectPage runs first
                     if (typeof window.authCheckSession === 'function') {
                         const user = await window.authCheckSession();
                         currentUserRole = user ? user.rol : null;
                     } else {
-                        const sessionRes = await fetch('/api/session');
+                        const sessionRes = await authFetch('/api/session');
                         const sessionData = await sessionRes.json();
                         currentUserRole = sessionData.user ? sessionData.user.rol : null;
                     }
@@ -181,13 +195,19 @@
             /* ── Load Users ── */
             async function loadUsers() {
                 try {
-                    const res = await fetch('/api/users');
-                    if (!res.ok) return;
+                    const res = await authFetch('/api/users');
+                    if (!res.ok) {
+                        if (res.status === 401 || res.status === 403) {
+                            document.getElementById('users-table-body').innerHTML =
+                                '<tr><td colspan="10" class="admin-empty">No tienes permisos para ver esta página</td></tr>';
+                        }
+                        return;
+                    }
                     allUsers = await res.json();
                     applyFilters();
                 } catch {
                     document.getElementById('users-table-body').innerHTML =
-                        '<tr><td colspan="9" class="admin-empty">Error al cargar usuarios</td></tr>';
+                        '<tr><td colspan="10" class="admin-empty">Error al cargar usuarios</td></tr>';
                 }
             }
 
@@ -267,7 +287,7 @@
                             const userId = e.target.dataset.id;
                             const newRole = e.target.value;
                             try {
-                                const res = await fetch(`/api/users/${userId}`, {
+                                const res = await authFetch(`/api/users/${userId}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ rol: newRole })
@@ -276,9 +296,11 @@
                                     showToast(`Rol actualizado a "${newRole}"`);
                                     const user = allUsers.find(u => u.id == userId);
                                     if (user) user.rol = newRole;
+                                    // Update the data-original attribute so reverting works correctly
+                                    e.target.dataset.original = newRole;
                                 } else {
                                     const data = await res.json();
-                                    showToast(data.error || 'Error al actualizar', true);
+                                    showToast(data.error || 'Error al actualizar rol', true);
                                     e.target.value = e.target.dataset.original;
                                 }
                             } catch {
@@ -294,7 +316,7 @@
             window.deleteUser = async function (id, nombre) {
                 if (!confirm(`¿Eliminar al usuario "${nombre}"? Esta acción no se puede deshacer.`)) return;
                 try {
-                    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                    const res = await authFetch(`/api/users/${id}`, { method: 'DELETE' });
                     if (res.ok) {
                         showToast('Usuario eliminado');
                         allUsers = allUsers.filter(u => u.id !== id);
