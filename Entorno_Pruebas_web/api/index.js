@@ -101,26 +101,43 @@ module.exports = async function (req, res) {
                     try {
                         if (typeof process._getActiveHandles === 'function') {
                             const handles = process._getActiveHandles();
+
+                            // Separate sockets and servers so we can destroy sockets first
+                            const socketHandles = [];
+                            const serverHandles = [];
                             for (const h of handles) {
                                 try {
                                     const ctor = (h && h.constructor && h.constructor.name) ? h.constructor.name : typeof h;
-                                    if (ctor === 'Server' && typeof h.close === 'function') {
-                                        try {
-                                            console.log('[api] closing Server handle', { addr: (typeof h.address === 'function') ? h.address() : null });
-                                            await new Promise((resolve) => {
-                                                try { h.close(() => resolve()); }
-                                                catch (e) { resolve(); }
-                                            });
-                                            console.log('[api] closed Server handle');
-                                        } catch (e) {
-                                            console.error('[api] error closing Server handle', e && e.stack ? e.stack : e);
-                                        }
-                                    } else if ((ctor === 'Socket' || ctor === 'TLSSocket') && typeof h.destroy === 'function') {
-                                        // Destroy ALL sockets in serverless to allow process exit
-                                        try { h.destroy(); } catch (e) { /* ignore */ }
-                                    }
+                                    if (ctor === 'Socket' || ctor === 'TLSSocket') socketHandles.push(h);
+                                    else if (ctor === 'Server') serverHandles.push(h);
                                 } catch (e) {
-                                    /* ignore per-handle errors */
+                                    /* ignore */
+                                }
+                            }
+
+                            // Destroy sockets aggressively first
+                            for (const s of socketHandles) {
+                                try { if (s && typeof s.destroy === 'function') s.destroy(); } catch (e) { /* ignore */ }
+                            }
+
+                            // Then close servers but guard with a short timeout to avoid hanging
+                            for (const srv of serverHandles) {
+                                try {
+                                    const addr = (srv && typeof srv.address === 'function') ? srv.address() : null;
+                                    console.log('[api] closing Server handle', { addr });
+                                    await new Promise((resolve) => {
+                                        let done = false;
+                                        try {
+                                            srv.close(() => { if (!done) { done = true; resolve(); } });
+                                        } catch (e) {
+                                            if (!done) { done = true; resolve(); }
+                                        }
+                                        // Fallback: resolve after 2s even if close callback never fires
+                                        setTimeout(() => { if (!done) { try { if (srv && typeof srv.close === 'function') { try { srv.close(() => {}); } catch (e) { /* ignore */ } } } finally { done = true; resolve(); } }, 2000);
+                                    });
+                                    console.log('[api] closed Server handle (or timed out)');
+                                } catch (e) {
+                                    console.error('[api] error closing Server handle', e && e.stack ? e.stack : e);
                                 }
                             }
                         }
@@ -130,11 +147,26 @@ module.exports = async function (req, res) {
 
                     const pg = require('../lib/pg');
                     if (pg && typeof pg.endPool === 'function') {
-                        await pg.endPool();
-                        console.log('[api] pg.endPool() called to allow process exit');
+                        // Guard pg.endPool with a timeout so we don't hang the serverless function
+                        try {
+                            await Promise.race([
+                                pg.endPool(),
+                                new Promise((resolve) => setTimeout(resolve, 2000))
+                            ]);
+                            console.log('[api] pg.endPool() called (with timeout) to allow process exit');
+                        } catch (e) {
+                            console.error('[api] pg.endPool error', e && e.stack ? e.stack : e);
+                        }
                     } else if (pg && typeof pg.end === 'function') {
-                        await pg.end();
-                        console.log('[api] pg.end() called to allow process exit');
+                        try {
+                            await Promise.race([
+                                pg.end(),
+                                new Promise((resolve) => setTimeout(resolve, 2000))
+                            ]);
+                            console.log('[api] pg.end() called (with timeout) to allow process exit');
+                        } catch (e) {
+                            console.error('[api] pg.end error', e && e.stack ? e.stack : e);
+                        }
                     } else {
                         console.log('[api] no pg.endPool/end available on require(../lib/pg)');
                     }

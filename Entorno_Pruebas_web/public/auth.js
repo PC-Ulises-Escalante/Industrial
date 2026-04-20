@@ -12,12 +12,26 @@ console.debug('[auth.js] loaded');
         opts = Object.assign({}, opts);
         // ensure cookies are sent for same-origin requests
         if (!opts.credentials) opts.credentials = 'same-origin';
-        opts.headers = opts.headers || {};
+
+        // Normalize headers: allow either a Headers instance or a plain object
+        const isHeadersInstance = (typeof Headers === 'function' && opts.headers instanceof Headers);
+        if (!isHeadersInstance) opts.headers = Object.assign({}, opts.headers || {});
+
         try {
             const token = localStorage.getItem('token');
-            if (token && !opts.headers.Authorization) opts.headers.Authorization = 'Bearer ' + token;
+            if (token) {
+                if (isHeadersInstance) {
+                    if (!opts.headers.has('Authorization')) opts.headers.set('Authorization', 'Bearer ' + token);
+                } else {
+                    if (!opts.headers.Authorization && !opts.headers.authorization) opts.headers['Authorization'] = 'Bearer ' + token;
+                }
+            }
         } catch (e) { /* ignore localStorage errors */ }
-        return fetch(url, opts);
+
+        return fetch(url, opts).catch(err => {
+            console.debug('[auth.js] apiFetch network error for', url, err);
+            throw err;
+        });
     }
 
     /* ── Check session on load ── */
@@ -25,7 +39,18 @@ console.debug('[auth.js] loaded');
         try {
             console.debug('[auth.js] checkSession: fetching /api/session');
             const res = await apiFetch('/api/session');
-            const data = await res.json();
+            console.debug('[auth.js] checkSession status:', res.status, res.statusText, res.headers && res.headers.get ? res.headers.get('content-type') : null);
+
+            // Read raw text first so we can log non-JSON errors from the server (helps diagnose 500s)
+            const text = await res.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                console.debug('[auth.js] checkSession invalid JSON response:', text);
+                throw new Error('Invalid JSON from /api/session: ' + text);
+            }
+
             console.debug('[auth.js] checkSession result:', data);
             updateNavbar(data.user);
             protectPage(data.user);
