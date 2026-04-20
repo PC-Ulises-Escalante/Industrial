@@ -1,81 +1,392 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proyectos — Semana Académica 2026</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <style>
-    /* Estilos específicos para proyectos */
-    .proyectos-hero { position: relative; padding: 120px 0 80px; text-align: center; }
-    .proyectos-badge { display: inline-block; padding: 8px 16px; border-radius: 100px; background: rgba(34, 211, 238, 0.08); color: var(--cyan); font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; border: 1px solid rgba(34, 211, 238, 0.2); }
-    .proyectos-title { font-size: 3.5rem; font-weight: 800; font-family: 'Sora', sans-serif; background: linear-gradient(135deg, var(--white) 0%, var(--slate-300) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 16px; line-height: 1.1; }
-    .proyectos-subtitle { font-size: 1.1rem; color: var(--slate-400); max-width: 600px; margin: 0 auto 40px; line-height: 1.6; }
+        /* Estilos específicos para proyectos */
+        .proyectos-hero {
+            position: relative;
+            padding: 120px 0 80px;
+            text-align: center;
+        }
 
-    /* Contenedor principal */
-    .proyectos-container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        .proyectos-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 100px;
+            background: rgba(34, 211, 238, 0.08);
+            color: var(--cyan);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(34, 211, 238, 0.2);
+        }
 
-    /* Card de registro */
-    .proyecto-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 32px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); margin-bottom: 40px; }
-    .proyecto-card-glow { position: absolute; inset: 0; border-radius: 16px; background: radial-gradient(circle at 50% 0%, rgba(34,211,238,0.08), transparent 70%); pointer-events: none; z-index: -1; }
+        .proyectos-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-family: 'Sora', sans-serif;
+            background: linear-gradient(135deg, var(--white) 0%, var(--slate-300) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 16px;
+            line-height: 1.1;
+        }
 
-    /* Formulario */
-    .proyecto-form { display: flex; flex-direction: column; gap: 20px; }
-    .form-group { display: flex; flex-direction: column; }
-    .form-label { font-size: 0.95rem; font-weight: 600; color: var(--slate-300); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .form-input, .form-textarea { padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(148,163,184,0.06); color: var(--slate-100); font-size: 1rem; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
-    .form-textarea { min-height: 120px; resize: vertical; }
-    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--cyan); }
-    .form-row { display: flex; gap: 20px; }
-    .form-row .form-group { flex: 1; }
+        .proyectos-subtitle {
+            font-size: 1.1rem;
+            color: var(--slate-400);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
 
-    /* Integrantes (igual que deportes) */
-    .integrante-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(148,163,184,0.06); margin-bottom: 8px; }
-    .integrante-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(34,211,238,0.1); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-weight: bold; }
-    .integrante-info { flex: 1; }
-    .integrante-nombre { font-weight: 600; color: var(--slate-300); }
-    .integrante-email { font-size: 0.9rem; color: var(--slate-500); }
-    .btn-eliminar { background: none; border: none; color: var(--slate-500); cursor: pointer; padding: 4px; border-radius: 4px; }
-    .btn-eliminar:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+        /* Contenedor principal */
+        .proyectos-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    /* Botón agregar integrante */
-    .agregar-integrante { display: flex; gap: 12px; }
-    .agregar-integrante input { flex: 1; }
-    .btn-agregar { padding: 12px 20px; border-radius: 8px; background: var(--cyan); color: var(--gray-950); font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
-    .btn-agregar:hover { opacity: 0.9; }
+        /* Card de registro */
+        .proyecto-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            margin-bottom: 40px;
+        }
 
-    /* Botón de registro */
-    .btn-registrar { padding: 14px 28px; border-radius: 10px; background: var(--cyan); color: var(--gray-950); font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: opacity 0.2s; align-self: flex-start; }
-    .btn-registrar:hover { opacity: 0.9; }
+        .proyecto-card-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.08), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
 
-    /* Lista de proyectos */
-    .proyectos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; margin-top: 40px; }
-    .proyecto-item-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: transform 0.3s ease; }
-    .proyecto-item-card:hover { transform: translateY(-4px); }
-    .proyecto-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-    .proyecto-item-nombre { font-size: 1.4rem; font-weight: 700; color: var(--white); margin: 0; }
-    .proyecto-item-fecha { font-size: 0.85rem; color: var(--slate-500); }
-    .proyecto-item-desc { color: var(--slate-400); line-height: 1.6; margin-bottom: 20px; }
-    .proyecto-item-integrantes { margin-top: 20px; }
-    .proyecto-item-integrantes h4 { font-size: 1rem; color: var(--slate-300); margin-bottom: 12px; }
-    .integrante-list { display: flex; flex-direction: column; gap: 8px; }
-    .integrante-list-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px; }
-    .integrante-list-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(34,211,238,0.1); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 0.8rem; }
-    .integrante-list-info { flex: 1; }
-    .integrante-list-nombre { font-size: 0.9rem; color: var(--slate-300); }
-    .integrante-list-email { font-size: 0.8rem; color: var(--slate-500); }
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .proyectos-title { font-size: 2.5rem; }
-        .form-row { flex-direction: column; gap: 20px; }
-        .proyectos-grid { grid-template-columns: 1fr; }
-    }
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 760px;
+            padding: 22px;
+            border-radius: 14px;
+            position: relative;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 14px;
+            top: 10px;
+            background: none;
+            border: none;
+            color: var(--slate-400);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--white);
+        }
+
+        .proyecto-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--slate-300);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-input,
+        .form-textarea {
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(148, 163, 184, 0.06);
+            color: var(--slate-100);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Integrantes (igual que deportes) */
+        .integrante-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.06);
+            margin-bottom: 8px;
+        }
+
+        .integrante-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(34, 211, 238, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        .integrante-info {
+            flex: 1;
+        }
+
+        .integrante-nombre {
+            font-weight: 600;
+            color: var(--slate-300);
+        }
+
+        .integrante-email {
+            font-size: 0.9rem;
+            color: var(--slate-500);
+        }
+
+        .btn-eliminar {
+            background: none;
+            border: none;
+            color: var(--slate-500);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .btn-eliminar:hover {
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        /* Botón agregar integrante */
+        .agregar-integrante {
+            display: flex;
+            gap: 12px;
+        }
+
+        .agregar-integrante input {
+            flex: 1;
+        }
+
+        .btn-agregar {
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: var(--cyan);
+            color: var(--gray-950);
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-agregar:hover {
+            opacity: 0.9;
+        }
+
+        /* Botón de registro */
+        .btn-registrar {
+            padding: 14px 28px;
+            border-radius: 10px;
+            background: var(--cyan);
+            color: var(--gray-950);
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            align-self: flex-start;
+        }
+
+        .btn-registrar:hover {
+            opacity: 0.9;
+        }
+
+        /* Lista de proyectos */
+        .proyectos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .proyecto-item-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: transform 0.3s ease;
+        }
+
+        .proyecto-item-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .proyecto-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .proyecto-item-nombre {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--white);
+            margin: 0;
+        }
+
+        .proyecto-item-fecha {
+            font-size: 0.85rem;
+            color: var(--slate-500);
+        }
+
+        .proyecto-item-desc {
+            color: var(--slate-400);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .proyecto-item-integrantes {
+            margin-top: 20px;
+        }
+
+        .proyecto-item-integrantes h4 {
+            font-size: 1rem;
+            color: var(--slate-300);
+            margin-bottom: 12px;
+        }
+
+        .integrante-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .integrante-list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+        }
+
+        .integrante-list-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(34, 211, 238, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-size: 0.8rem;
+        }
+
+        .integrante-list-info {
+            flex: 1;
+        }
+
+        .integrante-list-nombre {
+            font-size: 0.9rem;
+            color: var(--slate-300);
+        }
+
+        .integrante-list-email {
+            font-size: 0.8rem;
+            color: var(--slate-500);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .proyectos-title {
+                font-size: 2.5rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .proyectos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
     <!-- Particles -->
     <div id="particles" aria-hidden="true"></div>
@@ -103,7 +414,21 @@
     <section class="proyectos-hero">
         <span class="proyectos-badge">Proyectos Estudiantiles</span>
         <h1 class="proyectos-title">Registro de Proyectos</h1>
-        <p class="proyectos-subtitle">Registra tu proyecto para la Semana Académica 2026. Incluye nombre, descripción e integrantes registrados en la app.</p>
+        <p class="proyectos-subtitle">Registra tu proyecto para la Semana Académica 2026. Incluye nombre, descripción e
+            integrantes registrados en la app.</p>
+        <button id="btn-universal-qr" class="btn-admin-link"
+            style="display:none; position:absolute; top:20px; right:20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3h6v6H3z" />
+                <path d="M15 3h6v6h-6z" />
+                <path d="M3 15h6v6H3z" />
+                <path d="M15 15h2v2h-2z" />
+                <path d="M19 19h2v2h-2z" />
+                <path d="M15 19h2v2h-2z" />
+                <path d="M19 15h2v2h-2z" />
+            </svg>
+            QR de Asistencia General
+        </button>
     </section>
 
     <div class="proyectos-container">
@@ -111,34 +436,51 @@
         <div class="proyecto-card glass">
             <div class="proyecto-card-glow"></div>
             <h2 style="margin: 0 0 24px 0; color: var(--white);">Registrar proyecto</h2>
-            
+
             <form id="proyecto-form" class="proyecto-form">
                 <div class="form-group">
                     <label class="form-label" for="nombre-proyecto">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
                         Nombre del proyecto
                     </label>
-                    <input id="nombre-proyecto" class="form-input" type="text" placeholder="Ej: Sistema automatizado de gestión industrial" required>
+                    <input id="nombre-proyecto" class="form-input" type="text"
+                        placeholder="Ej: Sistema automatizado de gestión industrial" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="descripcion-proyecto">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
                         Descripción
                     </label>
-                    <textarea id="descripcion-proyecto" class="form-textarea" placeholder="Describe tu proyecto, objetivos, tecnologías utilizadas, etc." required></textarea>
+                    <textarea id="descripcion-proyecto" class="form-textarea"
+                        placeholder="Describe tu proyecto, objetivos, tecnologías utilizadas, etc." required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
                         Integrantes del proyecto
                     </label>
                     <div id="integrantes-list">
                         <!-- Los integrantes se agregarán aquí dinámicamente -->
                     </div>
                     <div class="agregar-integrante">
-                        <input id="integrante-email" class="form-input" type="email" placeholder="Correo del integrante (debe estar registrado en la app)">
+                        <input id="integrante-email" class="form-input" type="email"
+                            placeholder="Correo del integrante (debe estar registrado en la app)">
                         <button type="button" id="btn-agregar-integrante" class="btn-agregar">Agregar</button>
                     </div>
                 </div>
@@ -151,6 +493,20 @@
         <h2 style="color: var(--white); margin-top: 60px;">Proyectos registrados</h2>
         <div class="proyectos-grid" id="proyectos-grid">
             <div class="admin-empty">Cargando proyectos...</div>
+        </div>
+    </div>
+
+    <!-- Modal QR Universal -->
+    <div class="modal-overlay" id="qr-modal-overlay">
+        <div class="modal-card glass" style="max-width: 400px; text-align: center;">
+            <button class="modal-close" id="qr-modal-close">&times;</button>
+            <h3 style="margin-top:0;">QR Universal de Asistencia a Proyectos</h3>
+            <p style="font-size:0.9rem; color:var(--slate-400);">Usa este QR para registrar globalmente a los alumnos
+                que asistan a las presentaciones de proyectos.</p>
+            <img id="universal-qr-img" src="" alt="QR Universal"
+                style="width:100%; max-width:300px; display:block; margin: 20px auto; border-radius: 12px; background:white; padding:10px;">
+            <button class="btn-registrar" id="btn-generate-universal-qr"
+                style="width:100%; justify-content:center;">Generar Nuevo QR Mágico</button>
         </div>
     </div>
 
@@ -198,7 +554,7 @@
                     const p = document.createElement("div");
                     p.classList.add("particle");
                     const size = Math.random() * 3 + 2;
-                    p.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--duration:${Math.random()*6+4}s;--delay:${Math.random()*4}s;`;
+                    p.style.cssText = `width:${size}px;height:${size}px;top:${Math.random() * 100}%;left:${Math.random() * 100}%;--duration:${Math.random() * 6 + 4}s;--delay:${Math.random() * 4}s;`;
                     frag.appendChild(p);
                 }
                 particlesEl.appendChild(frag);
@@ -220,7 +576,7 @@
                 const emailInput = document.getElementById('integrante-email');
                 const email = emailInput.value.trim();
                 if (!email) return alert('Ingresa un correo');
-                
+
                 // Verificar si el usuario existe en el sistema
                 try {
                     const res = await fetch(`/api/users/email/${encodeURIComponent(email)}`);
@@ -229,7 +585,7 @@
                         return;
                     }
                     const user = await res.json();
-                    
+
                     // Evitar duplicados
                     if (integrantes.some(i => i.email === email)) {
                         alert('Este integrante ya fue agregado.');
@@ -284,10 +640,10 @@
             // Enviar formulario
             document.getElementById('proyecto-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
+
                 const nombreProyecto = document.getElementById('nombre-proyecto').value.trim();
                 const descripcion = document.getElementById('descripcion-proyecto').value.trim();
-                
+
                 if (!nombreProyecto) return alert('Ingresa un nombre para el proyecto');
                 if (!descripcion) return alert('Ingresa una descripción');
                 if (integrantes.length === 0) return alert('Agrega al menos un integrante (tú mismo)');
@@ -347,6 +703,17 @@
                 const grid = document.getElementById('proyectos-grid');
                 if (!grid) return;
                 try {
+                    // Primero obtenemos el usuario y sus inscripciones
+                    const s = await fetch('/api/session');
+                    const sessionData = s.ok ? await s.json() : null;
+                    const currentUser = sessionData && sessionData.user ? sessionData.user : null;
+
+                    let misInscripciones = [];
+                    if (currentUser) {
+                        const inscRes = await fetch(`/api/proyectos/inscripciones/${currentUser.id}`);
+                        if (inscRes.ok) misInscripciones = await inscRes.json();
+                    }
+
                     const res = await fetch('/api/proyectos');
                     if (!res.ok) { grid.innerHTML = '<div class="admin-empty">No fue posible cargar proyectos</div>'; return; }
                     const proyectos = await res.json();
@@ -357,6 +724,9 @@
 
                     grid.innerHTML = proyectos.map(pro => {
                         const fecha = new Date(pro.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                        const yaInscrito = misInscripciones.includes(pro.id);
+                        const isStudent = currentUser && currentUser.rol === 'alumno';
+
                         return `
                             <div class="proyecto-item-card glass">
                                 <div class="proyecto-item-header">
@@ -378,9 +748,45 @@
                                         `).join('')}
                                     </div>
                                 </div>
+                                ${isStudent ? `
+                                    <button class="btn-registrar btn-inscribir" data-id="${pro.id}" style="width:100%; margin-top:24px; justify-content:center; padding:12px; font-size:0.9rem; ${yaInscrito ? 'opacity:0.5; cursor:not-allowed;' : ''}" ${yaInscrito ? 'disabled' : ''}>
+                                        ${yaInscrito ? 'Ya asistes a esta presentación' : 'Asistiré a esta presentación'}
+                                    </button>
+                                ` : ''}
                             </div>
                         `;
                     }).join('');
+
+                    // Event listeners for inscription
+                    document.querySelectorAll('.btn-inscribir').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const proId = e.target.getAttribute('data-id');
+                            try {
+                                const resp = await fetch(`/api/proyectos/${proId}/inscribir`, { method: 'POST' });
+                                if (resp.ok) {
+                                    alert('¡Inscrito exitosamente a la presentación del proyecto!');
+                                    e.target.disabled = true;
+                                    e.target.style.opacity = '0.5';
+                                    e.target.style.cursor = 'not-allowed';
+                                    e.target.textContent = 'Ya asistes a esta presentación';
+                                } else {
+                                    const errorData = await resp.json().catch(() => ({}));
+                                    alert(errorData.error || 'No se pudo inscribir.');
+                                }
+                            } catch (err) {
+                                alert('Error de conexión');
+                            }
+                        });
+                    });
+
+                    // Admin logic inside loadProyectos because we check currentUser
+                    if (currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'maestro')) {
+                        const globalBtn = document.getElementById('btn-universal-qr');
+                        if (globalBtn) {
+                            globalBtn.style.display = 'inline-flex';
+                            globalBtn.addEventListener('click', initUniversalQR);
+                        }
+                    }
 
                     // Fade-in animation
                     const cards = document.querySelectorAll(".proyecto-item-card");
@@ -410,6 +816,36 @@
             // Inicializar
             loadProyectos();
 
+            document.getElementById('qr-modal-close').addEventListener('click', () => {
+                document.getElementById('qr-modal-overlay').classList.remove('active');
+            });
+            document.getElementById('qr-modal-overlay').addEventListener('click', (e) => {
+                if (e.target.id === 'qr-modal-overlay') e.target.classList.remove('active');
+            });
+
+            async function initUniversalQR() {
+                document.getElementById('qr-modal-overlay').classList.add('active');
+                try {
+                    const res = await fetch('/api/universal/proyectos/qr');
+                    if (res.ok) {
+                        const data = await res.json();
+                        document.getElementById('universal-qr-img').src = data.qr_data_url;
+                        return; // Found existing
+                    }
+                } catch (e) { }
+            }
+
+            document.getElementById('btn-generate-universal-qr').addEventListener('click', async () => {
+                if (!confirm('¿Generar un nuevo QR anulará el anterior. Continuar?')) return;
+                try {
+                    const res = await fetch('/api/universal/proyectos/qr', { method: 'POST' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        document.getElementById('universal-qr-img').src = data.qr_data_url;
+                    } else { alert('Error al generar'); }
+                } catch (e) { alert('Fallo de red'); }
+            });
+
             function escapeHtml(str) {
                 const d = document.createElement('div');
                 d.textContent = str || '';
@@ -419,4 +855,5 @@
     </script>
     <script src="/auth.js"></script>
 </body>
+
 </html>

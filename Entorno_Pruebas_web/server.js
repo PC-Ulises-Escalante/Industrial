@@ -336,8 +336,46 @@ app.post('/api/register', async (req, res) => {
 
 app.get('/api/users', requireRole('administrador', 'maestro'), async (req, res) => {
     try {
-        const users = await dbLib.queryAll('SELECT id, nombre, email, rol, numero_control, semestre, sexo, horario, edad, created_at FROM users ORDER BY created_at DESC');
-        res.json(users);
+        const users = await dbLib.queryAll(`
+            SELECT u.id, u.nombre, u.email, u.rol, u.numero_control, u.semestre, u.sexo, u.horario, u.edad, u.created_at,
+                (SELECT COUNT(*) FROM asistencias_conferencias ac WHERE ac.user_id = u.id) as conf_asistencias,
+                (SELECT COUNT(*) FROM asistencias_deportes ad WHERE ad.user_id = u.id) as dep_asistencias,
+                (SELECT COUNT(*) FROM asistencias_proyectos ap WHERE ap.user_id = u.id) as proy_asistencias,
+                (SELECT COUNT(*) FROM asistencias_proyectos_universal apu WHERE apu.user_id = u.id) as proy_asistencias_univ,
+                (SELECT COUNT(*) FROM asistencias_embellecimiento ae WHERE ae.user_id = u.id) as emb_asistencias
+            FROM users u 
+            ORDER BY u.created_at DESC
+        `);
+
+        // Compute Credito Complementario for each user
+        const enrichedUsers = users.map(u => {
+            let credito = false;
+            // Solo alumnos aplican
+            if (u.rol === 'alumno') {
+                let confCount = parseInt(u.conf_asistencias) || 0;
+                let depCount = parseInt(u.dep_asistencias) || 0;
+                let proyCount = (parseInt(u.proy_asistencias) || 0) + (parseInt(u.proy_asistencias_univ) || 0);
+                let embCount = parseInt(u.emb_asistencias) || 0;
+                
+                if (u.horario === 'matutino') {
+                    if (confCount >= 2 && depCount >= 1 && proyCount >= 1 && embCount >= 1) {
+                        credito = true;
+                    }
+                } else if (u.horario === 'vespertino') {
+                    // Deporte is optional, just need conferences and projects
+                    if (confCount >= 4 && proyCount >= 1) { 
+                        credito = true;
+                    }
+                }
+            }
+            
+            return {
+                ...u,
+                credito_complementario: credito
+            };
+        });
+
+        res.json(enrichedUsers);
     } catch (err) { res.status(500).json({ error: 'Error' }); }
 });
 
@@ -1076,6 +1114,122 @@ app.post('/api/proyectos', async (req, res) => {
     } catch (err) {
         console.error('Error creating proyecto:', err);
         res.status(500).json({ error: 'Error al crear proyecto' });
+    }
+});
+
+/* ── INSCRIPCIÓN A LA PRESENTACIÓN DE UN PROYECTO ── */
+app.post('/api/proyectos/:id/inscribir', async (req, res) => {
+    const currentUser = req.user || (req.session && req.session.user) || req.jwtUser;
+    if (!currentUser) return res.status(401).json({ error: 'Debes iniciar sesión' });
+    const proyecto_id = parseInt(req.params.id);
+    if (isNaN(proyecto_id)) return res.status(400).json({ error: 'ID de proyecto requerido' });
+
+    try {
+        const existing = await qOne('SELECT id FROM proyectos_inscripciones WHERE proyecto_id = ? AND user_id = ?', [proyecto_id, currentUser.id]);
+        if (existing) return res.status(400).json({ error: 'Ya estás inscrito para asistir a este proyecto' });
+        
+        if (dbLib.usePg) {
+            await dbLib.run('INSERT INTO proyectos_inscripciones (proyecto_id, user_id) VALUES (?, ?)', [proyecto_id, currentUser.id]);
+        } else {
+            await runSql('INSERT INTO proyectos_inscripciones (proyecto_id, user_id) VALUES (?, ?)', [proyecto_id, currentUser.id]);
+            saveDb();
+        }
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('Error inscribiendo a proyecto:', err);
+        res.status(500).json({ error: 'Error al inscribirse' });
+    }
+});
+
+/* ── OBTENER INSCRIPCIONES A PROYECTOS ── */
+app.get('/api/proyectos/inscripciones/:userId', async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    if (isNaN(userId)) return res.status(400).json({ error: 'ID de usuario inválido' });
+    try {
+        const rows = await qAll('SELECT proyecto_id FROM proyectos_inscripciones WHERE user_id = ?', [userId]);
+        res.json(rows.map(r => r.proyecto_id));
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Error' }); }
+});
+
+/* ── CÓDIGOS QR UNIVERSALES PARA PROYECTOS Y EMBELLECIMIENTO ── */
+
+app.post('/api/universal/:tipo/qr', requireRole('administrador', 'maestro'), async (req, res) => {
+    const tipo = req.params.tipo; // 'proyectos' o 'embellecimiento'
+    if (tipo !== 'proyectos' && tipo !== 'embellecimiento') return res.status(400).json({ error: 'Tipo inválido' });
+
+    try {
+        const qrToken = uuidv4();
+        const resourceName = `universal_${tipo}`;
+        const qrUrl = `${req.protocol}://${req.get('host')}/qr/scan/${resourceName}/${qrToken}`;
+        const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 400, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
+
+        const existing = await qOne('SELECT id FROM universal_qr_codes WHERE tipo = ?', [tipo]);
+        if (existing) {
+            if (dbLib.usePg) {
+                await dbLib.run("UPDATE universal_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = now() + interval '14 days' WHERE tipo = ?", [qrToken, qrDataUrl, tipo]);
+            } else {
+                await runSql('UPDATE universal_qr_codes SET qr_token = ?, qr_data_url = ?, expires_at = datetime("now", "+14 days") WHERE tipo = ?', [qrToken, qrDataUrl, tipo]);
+            }
+        } else {
+            if (dbLib.usePg) {
+                await dbLib.run("INSERT INTO universal_qr_codes (tipo, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, now() + interval '14 days')", [tipo, qrToken, qrDataUrl]);
+            } else {
+                await runSql('INSERT INTO universal_qr_codes (tipo, qr_token, qr_data_url, expires_at) VALUES (?, ?, ?, datetime("now", "+14 days"))', [tipo, qrToken, qrDataUrl]);
+            }
+        }
+        if (!dbLib.usePg) saveDb();
+
+        res.json({ qr_token: qrToken, qr_data_url: qrDataUrl, scan_url: qrUrl, expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() });
+    } catch (err) {
+        console.error(`Error generando QR universal para ${tipo}:`, err);
+        res.status(500).json({ error: 'Error al generar QR' });
+    }
+});
+
+app.get('/api/universal/:tipo/qr', requireRole('administrador', 'maestro'), async (req, res) => {
+    const tipo = req.params.tipo;
+    const qrData = await qOne('SELECT qr_token, qr_data_url, expires_at FROM universal_qr_codes WHERE tipo = ?', [tipo]);
+    if (!qrData) return res.status(404).json({ error: 'QR no generado' });
+    res.json(qrData);
+});
+
+app.post('/api/universal_:tipo/qr/scan/:token', async (req, res) => {
+    const currentUser = req.user || (req.session && req.session.user) || req.jwtUser;
+    if (!currentUser) return res.status(401).json({ error: 'Debes iniciar sesión' });
+
+    const token = req.params.token;
+    const tipo = req.params.tipo;
+    if (tipo !== 'proyectos' && tipo !== 'embellecimiento') return res.status(400).json({ error: 'Tipo inválido' });
+
+    const qrInfo = await qOne('SELECT expires_at FROM universal_qr_codes WHERE qr_token = ? AND tipo = ?', [token, tipo]);
+    if (!qrInfo) return res.status(404).json({ error: 'QR inválido o expirado' });
+    if (qrInfo.expires_at && new Date(qrInfo.expires_at) < new Date()) {
+        return res.status(400).json({ error: 'QR expirado' });
+    }
+
+    const userId = currentUser.id;
+    const user = await qOne('SELECT rol FROM users WHERE id = ?', [userId]);
+    if (!user || user.rol !== 'alumno') {
+        return res.status(403).json({ error: 'Solo alumnos pueden registrar asistencia' });
+    }
+
+    try {
+        const table = tipo === 'proyectos' ? 'asistencias_proyectos_universal' : 'asistencias_embellecimiento';
+        const existingScan = await qOne(`SELECT id FROM ${table} WHERE user_id = ?`, [userId]);
+        if (existingScan) {
+            return res.status(400).json({ error: 'Ya has registrado tu asistencia general para este evento' });
+        }
+
+        if (dbLib.usePg) {
+            await dbLib.run(`INSERT INTO ${table} (user_id, qr_token) VALUES (?, ?)`, [userId, token]);
+        } else {
+            await runSql(`INSERT INTO ${table} (user_id, qr_token) VALUES (?, ?)`, [userId, token]);
+            saveDb();
+        }
+        res.json({ ok: true, meta: { title: `Semana Académica 2026`, subtitle: `¡Asistencia global de ${tipo} registrada!` } });
+    } catch (err) {
+        console.error(`Error al registrar escaneo universal para ${tipo}:`, err);
+        res.status(500).json({ error: 'Error al registrar asistencia' });
     }
 });
 

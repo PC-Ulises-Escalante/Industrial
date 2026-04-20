@@ -171,6 +171,38 @@ async function initDb() {
                 created_at TIMESTAMPTZ DEFAULT now()
             );`);
 
+            // Nuevas tablas para QR Universal y RSVP de presentaciones
+            await client.query(`CREATE TABLE IF NOT EXISTS proyectos_inscripciones (
+                id SERIAL PRIMARY KEY,
+                proyecto_id INTEGER REFERENCES proyectos(id),
+                user_id INTEGER REFERENCES users(id),
+                created_at TIMESTAMPTZ DEFAULT now(),
+                UNIQUE(proyecto_id, user_id)
+            );`);
+
+            await client.query(`CREATE TABLE IF NOT EXISTS universal_qr_codes (
+                id SERIAL PRIMARY KEY,
+                tipo TEXT UNIQUE NOT NULL,
+                qr_token TEXT NOT NULL,
+                qr_data_url TEXT NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );`);
+
+            await client.query(`CREATE TABLE IF NOT EXISTS asistencias_proyectos_universal (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) UNIQUE,
+                qr_token TEXT,
+                scanned_at TIMESTAMPTZ DEFAULT now()
+            );`);
+
+            await client.query(`CREATE TABLE IF NOT EXISTS asistencias_embellecimiento (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) UNIQUE,
+                qr_token TEXT,
+                scanned_at TIMESTAMPTZ DEFAULT now()
+            );`);
+
             // Migrations: add columns that may be missing from older table versions.
             // These are safe to run repeatedly — they silently no-op if the column already exists.
             const migrations = [
@@ -358,6 +390,37 @@ async function initDb() {
             foto_evidencia TEXT,
             user_id INTEGER REFERENCES users(id),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );`);
+
+        db.exec(`CREATE TABLE IF NOT EXISTS proyectos_inscripciones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            proyecto_id INTEGER REFERENCES proyectos(id),
+            user_id INTEGER REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(proyecto_id, user_id)
+        );`);
+
+        db.exec(`CREATE TABLE IF NOT EXISTS universal_qr_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipo TEXT UNIQUE NOT NULL,
+            qr_token TEXT NOT NULL,
+            qr_data_url TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );`);
+
+        db.exec(`CREATE TABLE IF NOT EXISTS asistencias_proyectos_universal (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER REFERENCES users(id) UNIQUE,
+            qr_token TEXT,
+            scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );`);
+
+        db.exec(`CREATE TABLE IF NOT EXISTS asistencias_embellecimiento (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER REFERENCES users(id) UNIQUE,
+            qr_token TEXT,
+            scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );`);
 
         saveDb();

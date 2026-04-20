@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -64,6 +64,26 @@
                 <option value="maestro">Maestros</option>
                 <option value="administrador">Administradores</option>
             </select>
+            <select class="filter-select" id="filter-horario">
+                <option value="">Todos los turnos</option>
+                <option value="matutino">Matutino</option>
+                <option value="vespertino">Vespertino</option>
+            </select>
+            <select class="filter-select" id="filter-semestre">
+                <option value="">Todos los semestres</option>
+                <option value="1">Semestre 1</option>
+                <option value="2">Semestre 2</option>
+                <option value="3">Semestre 3</option>
+                <option value="4">Semestre 4</option>
+                <option value="5">Semestre 5</option>
+                <option value="6">Semestre 6</option>
+                <option value="7">Semestre 7</option>
+                <option value="8">Semestre 8</option>
+                <option value="9">Semestre 9</option>
+                <option value="10">Semestre 10</option>
+                <option value="11">Semestre 11</option>
+                <option value="12">Semestre 12</option>
+            </select>
             <span class="filter-count" id="filter-count">0 usuarios</span>
         </div>
     </section>
@@ -81,7 +101,7 @@
                         <th>Horario</th>
                         <th>Núm. Control</th>
                         <th>Semestre</th>
-                        <th>Edad</th>
+                        <th style="min-width: 130px;">Crédito Comple.</th>
                         <th>Registro</th>
                         <th>Acciones</th>
                     </tr>
@@ -215,14 +235,24 @@
             /* ── Filters ── */
             document.getElementById('filter-search').addEventListener('input', applyFilters);
             document.getElementById('filter-role').addEventListener('change', applyFilters);
+            document.getElementById('filter-horario').addEventListener('change', applyFilters);
+            document.getElementById('filter-semestre').addEventListener('change', applyFilters);
 
             function applyFilters() {
                 const search = document.getElementById('filter-search').value.trim().toLowerCase();
                 const roleFilter = document.getElementById('filter-role').value;
+                const horarioFilter = document.getElementById('filter-horario').value;
+                const semestreFilter = document.getElementById('filter-semestre').value;
 
                 let filtered = allUsers;
                 if (roleFilter) {
                     filtered = filtered.filter(u => u.rol === roleFilter);
+                }
+                if (horarioFilter) {
+                    filtered = filtered.filter(u => u.horario === horarioFilter);
+                }
+                if (semestreFilter) {
+                    filtered = filtered.filter(u => String(u.semestre) === semestreFilter);
                 }
                 if (search) {
                     filtered = filtered.filter(u =>
@@ -268,7 +298,12 @@
                     <td>${u.horario ? (u.horario === 'vespertino' ? 'Vespertino' : (u.horario === 'matutino' ? 'Matutino' : escapeHtml(u.horario))) : '—'}</td>
                     <td>${u.numero_control || '—'}</td>
                     <td>${u.semestre || '—'}</td>
-                    <td>${u.edad || '—'}</td>
+                    <td>
+                        ${u.rol === 'alumno' ? (u.credito_complementario 
+                            ? '<span class="role-badge" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">Acreedor</span>' 
+                            : '<span class="role-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">No Cumple</span>')
+                        : '—'}
+                    </td>
                     <td>${formatDate(u.created_at)}</td>
                     <td>
                         <div class="table-actions">

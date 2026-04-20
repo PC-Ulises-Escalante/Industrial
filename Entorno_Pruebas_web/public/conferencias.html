@@ -29,6 +29,11 @@
     .conferencia-lugar { font-size: 1rem; color: var(--slate-300); margin-bottom: 12px; }
     .conferencia-ponente { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .ponente-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(34,211,238,0.3); }
+    /* Use the same circular photo ring used on ponentes page for better visual consistency */
+    .conferencia-card .evento-photo-ring { width: 110px; height: 110px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, var(--cyan), var(--purple)); margin: -24px auto 12px; overflow: hidden; }
+    .conferencia-card .evento-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--bg); display:block; }
+    .conferencia-ponente .ponente-photo-ring { width: 40px; height: 40px; border-radius: 50%; padding: 2px; background: linear-gradient(135deg, var(--cyan), var(--purple)); flex-shrink:0; overflow:hidden; }
+    .conferencia-ponente .ponente-photo { width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid var(--bg); display:block; }
     .ponente-info h4 { margin: 0; font-size: 1rem; color: var(--white); }
     .ponente-info p { margin: 0; font-size: 0.9rem; color: var(--slate-400); }
     .conferencia-desc { color: var(--slate-400); line-height: 1.6; margin-bottom: 20px; }
@@ -236,10 +241,19 @@
                         const yaInscrito = misInscripciones.some(i => i.conferencia_id === c.id);
                         // Don't use escapeHtml on URLs — it converts & to &amp; breaking Supabase query params
                         const rawFotoUrl = c.foto_evento && !c.foto_evento.startsWith('/tmp') ? c.foto_evento : null;
-                        const eventoImg = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/') || rawFotoUrl.startsWith('data:')) ? rawFotoUrl : null;
+                        let eventoSrc = null;
+                        if (rawFotoUrl) {
+                            if (rawFotoUrl.startsWith('data:') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('https://')) {
+                                eventoSrc = rawFotoUrl;
+                            } else {
+                                // Ensure a leading slash so the browser requests from the site root
+                                eventoSrc = '/' + String(rawFotoUrl).replace(/^\/+/, '');
+                            }
+                        }
+
                         return `
                             <div class="conferencia-card glass">
-                                ${eventoImg ? `<img src="${eventoImg}" alt="${escapeHtml(c.titulo)}" style="width:100%;height:180px;object-fit:cover;border-radius:12px 12px 0 0;margin:-24px -24px 16px -24px;width:calc(100% + 48px);">` : ''}
+                                ${eventoSrc ? `<div class="evento-photo-ring"><img src="${eventoSrc}" alt="${escapeHtml(c.titulo)}" class="evento-photo"/></div>` : ''}
                                 <div class="conferencia-header">
                                     <h3 class="conferencia-title">${escapeHtml(c.titulo)}</h3>
                                     <span class="conferencia-fecha">${escapeHtml(fecha)}</span>
@@ -247,8 +261,8 @@
                                 <p class="conferencia-lugar">📍 ${escapeHtml(c.lugar)}</p>
                                 ${c.ponente_nombre ? `
                                 <div class="conferencia-ponente">
-                                    <div style="width:40px;height:40px;border-radius:50%;background:rgba(34,211,238,0.15);display:flex;align-items:center;justify-content:center;border:2px solid rgba(34,211,238,0.3);flex-shrink:0;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <div class="ponente-photo-ring" style="width:40px;height:40px;">
+                                        <img src="${(c.ponente_foto && (c.ponente_foto.startsWith('data:') || c.ponente_foto.startsWith('http://') || c.ponente_foto.startsWith('https://'))) ? c.ponente_foto : (c.ponente_foto ? '/' + String(c.ponente_foto).replace(/^\/+/, '') : 'Eng.webp')}" alt="${escapeHtml(c.ponente_nombre)}" class="ponente-photo" />
                                     </div>
                                     <div class="ponente-info">
                                         <h4>${escapeHtml(c.ponente_nombre)}</h4>
@@ -377,7 +391,8 @@
                             overlay.querySelector('#edit-conf-ponente-profesion').value = conf.ponente_profesion || '';
                             let editImageData = null;
                             if (conf.foto_evento) {
-                                imagePreviewImg.src = conf.foto_evento;
+                                const _src = (conf.foto_evento.startsWith && (conf.foto_evento.startsWith('data:') || conf.foto_evento.startsWith('http://') || conf.foto_evento.startsWith('https://'))) ? conf.foto_evento : ('/' + String(conf.foto_evento).replace(/^\/+/, ''));
+                                imagePreviewImg.src = _src;
                                 imagePreview.style.display = 'block';
                             }
 
