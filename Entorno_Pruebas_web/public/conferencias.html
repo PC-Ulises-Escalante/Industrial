@@ -221,7 +221,9 @@
                         let fecha = '—';
                         try {
                             if (c && c.fecha) {
-                                const d = new Date(c.fecha);
+                                // Append T12:00:00 to avoid UTC midnight timezone shift
+                                const dateStr = String(c.fecha).split('T')[0];
+                                const d = new Date(dateStr + 'T12:00:00');
                                 if (!isNaN(d.getTime())) fecha = d.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                             } else if (c && c.created_at) {
                                 const d2 = new Date(c.created_at);
@@ -229,8 +231,10 @@
                             }
                         } catch (e) { /* fallback to '—' */ }
                         const yaInscrito = misInscripciones.some(i => i.conferencia_id === c.id);
+                        const eventoImg = c.foto_evento && !c.foto_evento.startsWith('/tmp') ? escapeHtml(c.foto_evento) : null;
                         return `
                             <div class="conferencia-card glass">
+                                ${eventoImg ? `<img src="${eventoImg}" alt="${escapeHtml(c.titulo)}" style="width:100%;height:180px;object-fit:cover;border-radius:12px 12px 0 0;margin:-24px -24px 16px -24px;width:calc(100% + 48px);">` : ''}
                                 <div class="conferencia-header">
                                     <h3 class="conferencia-title">${escapeHtml(c.titulo)}</h3>
                                     <span class="conferencia-fecha">${escapeHtml(fecha)}</span>
@@ -238,7 +242,9 @@
                                 <p class="conferencia-lugar">📍 ${escapeHtml(c.lugar)}</p>
                                 ${c.ponente_nombre ? `
                                 <div class="conferencia-ponente">
-                                    <img src="${c.ponente_foto ? escapeHtml(c.ponente_foto) : 'Eng.webp'}" alt="${escapeHtml(c.ponente_nombre)}" class="ponente-avatar">
+                                    <div style="width:40px;height:40px;border-radius:50%;background:rgba(34,211,238,0.15);display:flex;align-items:center;justify-content:center;border:2px solid rgba(34,211,238,0.3);flex-shrink:0;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    </div>
                                     <div class="ponente-info">
                                         <h4>${escapeHtml(c.ponente_nombre)}</h4>
                                         <p>${escapeHtml(c.ponente_profesion || 'Presentador')}</p>

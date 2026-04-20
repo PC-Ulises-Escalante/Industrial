@@ -7,8 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initQRManagement() {
+    // Ensure apiFetch is available (from auth.js)
+    const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
     try {
-        const sessionRes = await fetch('/api/session');
+        const sessionRes = await _fetch('/api/session');
         if (!sessionRes.ok) return;
         const session = await sessionRes.json();
         if (!session.user) return;
@@ -50,8 +52,9 @@ async function addQRButtonsToConferences() {
     
     // Check user role again
     let userRole = null;
+    const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
     try {
-        const sessionRes = await fetch('/api/session');
+        const sessionRes = await _fetch('/api/session');
         if (sessionRes.ok) {
             const session = await sessionRes.json();
             userRole = session.user?.rol;
@@ -218,7 +221,8 @@ function getConferenceIdFromCard(card) {
 
 async function loadQRStatus(conferenceId, statusElement, viewBtn, generateBtn) {
     try {
-        const res = await fetch(`/api/conferencias/${conferenceId}/qr`);
+        const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+        const res = await _fetch(`/api/conferencias/${conferenceId}/qr`);
         if (res.ok) {
             const qrData = await res.json();
             
@@ -257,7 +261,8 @@ async function loadQRStatus(conferenceId, statusElement, viewBtn, generateBtn) {
 
 async function generateQR(conferenceId, statusElement, viewBtn, previewContainer, qrImage, scanUrl) {
     try {
-        const res = await fetch(`/api/conferencias/${conferenceId}/qr`, {
+        const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+        const res = await _fetch(`/api/conferencias/${conferenceId}/qr`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -295,7 +300,8 @@ async function generateQR(conferenceId, statusElement, viewBtn, previewContainer
 
 async function viewQR(conferenceId, previewContainer, qrImage, scanUrl) {
     try {
-        const res = await fetch(`/api/conferencias/${conferenceId}/qr`);
+        const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+        const res = await _fetch(`/api/conferencias/${conferenceId}/qr`);
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             alert(err.error || 'Error al cargar QR');
@@ -315,7 +321,8 @@ async function viewQR(conferenceId, previewContainer, qrImage, scanUrl) {
 
 async function viewAttendance(conferenceId) {
     try {
-        const res = await fetch(`/api/conferencias/${conferenceId}/asistencias`);
+        const _fetch = (typeof apiFetch === 'function') ? apiFetch : fetch;
+        const res = await _fetch(`/api/conferencias/${conferenceId}/asistencias`);
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             alert(err.error || 'Error al cargar asistencias');

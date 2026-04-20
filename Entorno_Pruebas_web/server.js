@@ -591,6 +591,8 @@ app.get('/api/conferencias/:id/qr', requireRole('administrador', 'maestro'), asy
     if (isNaN(conferenciaId)) return res.status(400).json({ error: 'ID de conferencia inválido' });
     const qrData = await qOne('SELECT qr_token, qr_data_url, expires_at FROM conferencia_qr_codes WHERE conferencia_id = ?', [conferenciaId]);
     if (!qrData) return res.status(404).json({ error: 'QR no generado para esta conferencia' });
+    // Compute scan_url from stored token (same format as POST endpoint)
+    qrData.scan_url = `${req.protocol}://${req.get('host')}/qr/scan/conferencias/${qrData.qr_token}`;
     res.json(qrData);
 });
 
