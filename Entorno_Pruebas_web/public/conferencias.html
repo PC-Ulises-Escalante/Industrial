@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -236,7 +236,7 @@
                         const yaInscrito = misInscripciones.some(i => i.conferencia_id === c.id);
                         // Don't use escapeHtml on URLs — it converts & to &amp; breaking Supabase query params
                         const rawFotoUrl = c.foto_evento && !c.foto_evento.startsWith('/tmp') ? c.foto_evento : null;
-                        const eventoImg = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/')) ? rawFotoUrl : null;
+                        const eventoImg = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/') || rawFotoUrl.startsWith('data:')) ? rawFotoUrl : null;
                         return `
                             <div class="conferencia-card glass">
                                 ${eventoImg ? `<img src="${eventoImg}" alt="${escapeHtml(c.titulo)}" style="width:100%;height:180px;object-fit:cover;border-radius:12px 12px 0 0;margin:-24px -24px 16px -24px;width:calc(100% + 48px);">` : ''}

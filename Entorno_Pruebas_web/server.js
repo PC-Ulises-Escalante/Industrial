@@ -43,30 +43,7 @@ async function saveImage(dataUrl, subdir) {
 
     const buffer = Buffer.from(base64, 'base64');
 
-    // If Supabase is configured, try uploading there first (preferred).
-    if (supabase) {
-        try {
-            const bucketPath = `${subdir}/${filename}`;
-            const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET).upload(bucketPath, buffer, { contentType: mime, upsert: false });
-            if (uploadError) throw uploadError;
-            const { data: publicUrlData } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(bucketPath);
-            if (publicUrlData && publicUrlData.publicUrl) {
-                console.log(`Supabase upload success: ${publicUrlData.publicUrl}`);
-                return publicUrlData.publicUrl;
-            }
-            // If SDK didn't return publicUrl, try to construct one (common Supabase pattern)
-            if (process.env.SUPABASE_URL) {
-                const base = process.env.SUPABASE_URL.replace(/\/$/, '');
-                return `${base}/storage/v1/object/public/${SUPABASE_BUCKET}/${bucketPath.split('/').map(encodeURIComponent).join('/')}`;
-            }
-            return null;
-        } catch (err) {
-            console.warn(`Supabase upload failed for ${subdir}:`, err && err.message ? err.message : err);
-            // fallthrough to local/tmp save
-        }
-    }
-
-    // Next, attempt to save locally when not running in a serverless/read-only environment
+    // If we're not inside a Serverless environment, we'll write to the local directory (useful for local development)
     if (!isServerlessEnvironment) {
         try {
             const destDir = path.join(__dirname, 'Images', subdir);
@@ -78,32 +55,14 @@ async function saveImage(dataUrl, subdir) {
         } catch (err) {
             console.warn(`Local image save failed for ${subdir}:`, err && err.code ? err.code + ': ' + err.message : err);
         }
-    } else {
-        console.debug(`Skipping local image save for ${subdir} on serverless environment`);
-    }
+    } 
 
-    // Last-resort: try to write into Images from tmpdir then return web path
-    try {
-        const tmpDir = path.join(os.tmpdir(), 'entorno_pruebas_images', subdir);
-        fs.mkdirSync(tmpDir, { recursive: true });
-        const tmpPath = path.join(tmpDir, filename);
-        fs.writeFileSync(tmpPath, buffer);
-        // Attempt to copy into web-accessible Images folder
-        try {
-            const destDir = path.join(__dirname, 'Images', subdir);
-            fs.mkdirSync(destDir, { recursive: true });
-            const destPath = path.join(destDir, filename);
-            fs.copyFileSync(tmpPath, destPath);
-            return '/' + path.posix.join('Images', subdir, filename);
-        } catch (copyErr) {
-            console.warn('Could not copy tmp image into Images folder:', copyErr && copyErr.message ? copyErr.message : copyErr);
-            // As a last fallback, do not return an absolute filesystem path (browser cannot access it)
-            return null;
-        }
-    } catch (err) {
-        console.warn('Fallback to tmpdir failed:', err && err.code ? err.code + ': ' + err.message : err);
-        return null;
-    }
+    // En Vercel no se retienen los archivos grabados dinámicamente, por lo cual, 
+    // al ser pocas imágenes como solicitaste, las guardaremos en Base64 directo a la 
+    // base de datos (PostgreSQL soporta bien cadenas largas en columnas TEXT).
+    // Devolvemos el mismo dataUrl para ser insertado.
+    return dataUrl;
+
 }
 
 const app = express();
@@ -485,6 +444,57 @@ app.post('/api/ponentes', requireRole('administrador'), async (req, res) => {
         console.error('Error creating ponente:', err);
         res.status(500).json({ error: 'Error al crear ponente' });
     }
+});
+
+app.put('/api/ponentes/:id', requireRole('administrador'), async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    const { nombre, profesion, topic_title, topic_desc, linkedin, facebook, instagram, imageData } = req.body;
+    if (!nombre) return res.status(400).json({ error: 'Nombre es requerido' });
+
+    try {
+        let fotoPath = null;
+        if (imageData) {
+            try {
+                fotoPath = await saveImage(imageData, 'ponentes');
+            } catch (err) {
+                console.warn('No se pudo guardar la imagen de ponente (update):', err && err.message ? err.message : err);
+                fotoPath = null;
+            }
+        }
+
+        const params = [nombre.trim(), profesion || null, topic_title || null, topic_desc || null, linkedin || null, facebook || null, instagram || null, id];
+        if (dbLib.usePg) {
+            if (fotoPath === null) {
+                await dbLib.run('UPDATE ponentes SET nombre = ?, profesion = ?, topic_title = ?, topic_desc = ?, linkedin = ?, facebook = ?, instagram = ? WHERE id = ?', params);
+            } else {
+                await dbLib.run('UPDATE ponentes SET nombre = ?, profesion = ?, topic_title = ?, topic_desc = ?, linkedin = ?, facebook = ?, instagram = ?, foto_path = ? WHERE id = ?', [...params.slice(0,-1), fotoPath, id]);
+            }
+            res.json({ ok: true });
+        } else {
+            if (fotoPath === null) {
+                await runSql('UPDATE ponentes SET nombre = ?, profesion = ?, topic_title = ?, topic_desc = ?, linkedin = ?, facebook = ?, instagram = ? WHERE id = ?', params);
+            } else {
+                await runSql('UPDATE ponentes SET nombre = ?, profesion = ?, topic_title = ?, topic_desc = ?, linkedin = ?, facebook = ?, instagram = ?, foto_path = ? WHERE id = ?', [...params.slice(0,-1), fotoPath, id]);
+            }
+            saveDb();
+            res.json({ ok: true });
+        }
+    } catch (err) {
+        console.error('Error updating ponente:', err);
+        res.status(500).json({ error: 'Error al actualizar ponente' });
+    }
+});
+
+app.delete('/api/ponentes/:id', requireRole('administrador'), async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    try {
+        if (dbLib.usePg) await dbLib.run('DELETE FROM ponentes WHERE id = ?', [id]);
+        else { await runSql('DELETE FROM ponentes WHERE id = ?', [id]); saveDb(); }
+        res.json({ ok: true });
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Error' }); }
 });
 
 app.get('/api/conferencias', async (req, res) => {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -165,11 +165,12 @@
                         return;
                     }
                     grid.innerHTML = ponentes.map(p => {
-                        const foto = p.foto_path ? p.foto_path : 'Eng.webp';
+                        const rawFotoUrl = p.foto_path ? p.foto_path : 'Eng.webp';
+                        const fotoUrl = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/') || rawFotoUrl.startsWith('data:')) ? rawFotoUrl : 'Eng.webp';
                         return `
-                            <div class="ponente-card glass">
+                            <div class="ponente-card glass" data-ponente-id="${p.id}">
                                 <div class="ponente-photo-ring">
-                                    <img src="/${escapeHtml(foto)}" alt="${escapeHtml(p.nombre)}" class="ponente-photo">
+                                    <img src="${fotoUrl.startsWith('data:') ? fotoUrl : '/' + escapeHtml(fotoUrl).replace(/^\/+/, '')}" alt="${escapeHtml(p.nombre)}" class="ponente-photo">
                                 </div>
                                 <h3 class="ponente-name">${escapeHtml(p.nombre)}</h3>
                                 <p class="ponente-role">${escapeHtml(p.profesion || '')}</p>
@@ -182,6 +183,9 @@
                                     ${p.facebook ? `<a href="${escapeHtml(p.facebook)}" class="ponente-social-link" aria-label="Facebook">${facebookSVG}</a>` : ''}
                                     ${p.instagram ? `<a href="${escapeHtml(p.instagram)}" class="ponente-social-link" aria-label="Instagram">${instagramSVG}</a>` : ''}
                                 </div>
+                                <button class="btn-edit-ponente" data-ponente='${escapeHtml(JSON.stringify(p))}' style="display:none; position:absolute; top:12px; right:12px; padding:6px; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); border-radius:8px; color:var(--cyan); cursor:pointer;" aria-label="Editar">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </button>
                             </div>
                         `;
                     }).join('');
@@ -309,7 +313,46 @@
                     const openModal = () => { overlay.classList.add('active'); document.body.style.overflow = 'hidden'; };
                     const closeModal = () => { overlay.classList.remove('active'); document.body.style.overflow = ''; }
 
-                    addBtn.addEventListener('click', openModal);
+                    // Show edit buttons
+                    document.querySelectorAll('.btn-edit-ponente').forEach(btn => {
+                        btn.style.display = 'block';
+                        btn.addEventListener('click', () => {
+                            const p = JSON.parse(btn.getAttribute('data-ponente').replace(/&quot;/g, '"'));
+                            overlay.querySelector('h3').textContent = 'Editar Ponente';
+                            overlay.querySelector('.registro-submit').textContent = 'Guardar Cambios';
+                            formEl.setAttribute('data-edit-id', p.id);
+                            
+                            overlay.querySelector('#pub-nombre').value = p.nombre || '';
+                            overlay.querySelector('#pub-profesion').value = p.profesion || '';
+                            overlay.querySelector('#pub-topic-title').value = p.topic_title || '';
+                            overlay.querySelector('#pub-topic-desc').value = p.topic_desc || '';
+                            overlay.querySelector('#pub-linkedin').value = p.linkedin || '';
+                            overlay.querySelector('#pub-facebook').value = p.facebook || '';
+                            overlay.querySelector('#pub-instagram').value = p.instagram || '';
+                            
+                            pubImageData = null; // reset image
+                            if (p.foto_path) {
+                                const isDataUrl = p.foto_path.startsWith('data:');
+                                preview.src = isDataUrl ? p.foto_path : '/' + p.foto_path.replace(/^\/+/, '');
+                                preview.style.display = 'block';
+                            } else {
+                                preview.style.display = 'none';
+                            }
+                            openModal();
+                        });
+                    });
+
+                    // Update 'add' button to clear form
+                    addBtn.addEventListener('click', () => {
+                        overlay.querySelector('h3').textContent = 'Agregar Ponente';
+                        overlay.querySelector('.registro-submit').textContent = 'Agregar Ponente';
+                        formEl.removeAttribute('data-edit-id');
+                        formEl.reset();
+                        pubImageData = null;
+                        preview.style.display = 'none';
+                        openModal();
+                    });
+
                     const closeBtn = overlay.querySelector('.modal-close');
                     closeBtn.addEventListener('click', closeModal);
                     overlay.querySelector('#pub-cancel').addEventListener('click', closeModal);
@@ -332,6 +375,9 @@
                     const formEl = overlay.querySelector('#add-ponente-public-form');
                     formEl.addEventListener('submit', async (ev) => {
                         ev.preventDefault();
+                        const id = formEl.getAttribute('data-edit-id');
+                        const isEdit = !!id;
+
                         const payload = {
                             nombre: overlay.querySelector('#pub-nombre').value.trim(),
                             profesion: overlay.querySelector('#pub-profesion').value.trim(),
@@ -344,18 +390,19 @@
                         };
                         if (!payload.nombre) return alert('El nombre es requerido');
                         try {
-                            const res = await apiFetch('/api/ponentes', {
-                                method: 'POST',
+                            const method = isEdit ? 'PUT' : 'POST';
+                            const url = isEdit ? `/api/ponentes/${id}` : '/api/ponentes';
+                            const res = await apiFetch(url, {
+                                method: method,
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
                             });
                             if (!res.ok) {
                                 const err = await res.json().catch(()=>({}));
-                                return alert(err.error || 'Error al crear ponente');
+                                return alert(err.error || (isEdit ? 'Error al actualizar' : 'Error al crear ponente'));
                             }
                             closeModal();
-                            loadSpeakers();
-                            alert('Ponente agregado');
+                            window.location.reload(); 
                         } catch (err) {
                             console.error(err);
                             alert('Error al conectar con el servidor');

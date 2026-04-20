@@ -365,7 +365,7 @@
                     } catch (e) { /* fallback */ }
 
                     const rawFotoUrl = a.foto_evidencia && !a.foto_evidencia.startsWith('/tmp') ? a.foto_evidencia : null;
-                    const fotoUrl = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/')) ? rawFotoUrl : null;
+                    const fotoUrl = rawFotoUrl && (rawFotoUrl.startsWith('https://') || rawFotoUrl.startsWith('http://') || rawFotoUrl.startsWith('Images/') || rawFotoUrl.startsWith('/') || rawFotoUrl.startsWith('data:')) ? rawFotoUrl : null;
 
                     return `
                         <div class="embell-card glass">
