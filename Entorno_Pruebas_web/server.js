@@ -39,15 +39,24 @@ async function saveImage(dataUrl, subdir) {
     const ext = mime.split('/')[1].split('+')[0];
     const filename = Date.now() + '-' + crypto.randomBytes(6).toString('hex') + '.' + ext;
 
+    // Determine if we're running in a serverless/read-only deployment.
+    const isServerlessEnvironment = (process.env.VERCEL === '1') || !!process.env.FUNCTIONS_WORKER_RUNTIME || !!process.env.AWS_REGION || (process.env.DISABLE_LOCAL_IMAGE_SAVE === '1');
+
     // Intento 1: guardar localmente en ./Images/<subdir>
-    try {
-        const destDir = path.join(__dirname, 'Images', subdir);
-        fs.mkdirSync(destDir, { recursive: true });
-        const filepath = path.join(destDir, filename);
-        fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
-        return ['Images', subdir, filename].join('/');
-    } catch (err) {
-        console.warn(`Local image save failed for ${subdir}:`, err && err.code ? err.code + ': ' + err.message : err);
+    // Skip attempting to write into the deployment directory on serverless platforms
+    // (e.g. Vercel) since /var/task is usually read-only and will produce ENOENT/EPERM.
+    if (!isServerlessEnvironment) {
+        try {
+            const destDir = path.join(__dirname, 'Images', subdir);
+            fs.mkdirSync(destDir, { recursive: true });
+            const filepath = path.join(destDir, filename);
+            fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
+            return ['Images', subdir, filename].join('/');
+        } catch (err) {
+            console.warn(`Local image save failed for ${subdir}:`, err && err.code ? err.code + ': ' + err.message : err);
+        }
+    } else {
+        console.debug(`Skipping local image save for ${subdir} on serverless environment`);
     }
 
     // Intento 2: subir a Supabase Storage si está configurado
@@ -87,6 +96,13 @@ let db;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
+// Ensure API responses are not cached by browsers or CDNs (prevents 304 stale responses)
+app.use('/api', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+});
 // Serve the QR scan landing page (GET) so scanner apps that only perform GET requests
 // can open a friendly page which will POST to the API to register attendance.
 app.get('/qr/scan/:resource/:token', (req, res) => {

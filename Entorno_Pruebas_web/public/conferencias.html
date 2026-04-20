@@ -90,7 +90,13 @@
         </button>
     </section>
 
-    
+    <!-- CONFERENCIAS GRID -->
+    <section style="position:relative; z-index:1; padding: 0 0 4rem;">
+        <div class="conferencias-grid" id="conferencias-grid">
+            <!-- Cards are loaded dynamically by loadConferencias() -->
+        </div>
+    </section>
+
     <!-- FOOTER -->
     <footer class="footer-section glass" id="contacto">
         <div class="footer-content">
@@ -191,7 +197,7 @@
                 const grid = document.getElementById('conferencias-grid');
                 if (!grid) return;
                 try {
-                    const res = await apiFetch('/api/conferencias');
+                    const res = await apiFetch('/api/conferencias', { cache: 'no-store' });
                     if (!res.ok) { console.warn('No fue posible cargar conferencias'); attachInscripcionButtons(); return; }
                     const conferencias = await res.json();
                     if (!Array.isArray(conferencias) || conferencias.length === 0) { console.warn('No hay conferencias programadas'); attachInscripcionButtons(); return; }
@@ -212,7 +218,16 @@
                     } catch (e) { console.log('No se pudieron cargar inscripciones', e); }
 
                     grid.innerHTML = conferencias.map(c => {
-                        const fecha = new Date(c.fecha).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                        let fecha = '—';
+                        try {
+                            if (c && c.fecha) {
+                                const d = new Date(c.fecha);
+                                if (!isNaN(d.getTime())) fecha = d.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                            } else if (c && c.created_at) {
+                                const d2 = new Date(c.created_at);
+                                if (!isNaN(d2.getTime())) fecha = d2.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: '2-digit' });
+                            }
+                        } catch (e) { /* fallback to '—' */ }
                         const yaInscrito = misInscripciones.some(i => i.conferencia_id === c.id);
                         return `
                             <div class="conferencia-card glass">
