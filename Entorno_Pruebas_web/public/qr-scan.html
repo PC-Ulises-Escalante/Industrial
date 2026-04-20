@@ -32,13 +32,25 @@
       renderInfo(`Enviando POST a ${apiPath} ...`);
 
       try{
-        const res = await fetch(apiPath, { method: 'POST', credentials: 'include' });
+        const fetchOpts = { method: 'POST', credentials: 'include', headers: {} };
+        // Include JWT token from localStorage (needed on Vercel where sessions are disabled)
+        try {
+          const savedToken = localStorage.getItem('token');
+          if (savedToken) fetchOpts.headers['Authorization'] = 'Bearer ' + savedToken;
+        } catch(e) { /* ignore */ }
+
+        const res = await fetch(apiPath, fetchOpts);
         const text = await res.text();
         if(res.ok){
           renderSuccess('Asistencia registrada correctamente.');
           renderResponse(text);
         } else {
-          renderError(`Error: ${res.status} ${res.statusText}`);
+          // If 401, show login prompt
+          if(res.status === 401){
+            renderError('Debes iniciar sesión primero. Inicia sesión en la página principal y vuelve a escanear el QR.');
+          } else {
+            renderError(`Error: ${res.status} ${res.statusText}`);
+          }
           renderResponse(text);
         }
       }catch(err){

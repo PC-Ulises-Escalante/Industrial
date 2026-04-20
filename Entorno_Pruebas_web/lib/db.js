@@ -12,18 +12,6 @@ if (usePg) {
     pgModule = require('./pg');
 } else {
     console.log('Using SQLite database');
-    const initSqlJs = require('sql.js');
-    const DB_PATH = path.join(__dirname, '..', 'database.sqlite');
-
-    // Load or create SQLite database
-    if (fs.existsSync(DB_PATH)) {
-        const buffer = fs.readFileSync(DB_PATH);
-        db = new (initSqlJs.Database)(buffer);
-        console.log('Loaded existing SQLite database');
-    } else {
-        db = new (initSqlJs.Database)();
-        console.log('Created new SQLite database');
-    }
 }
 
 function convertPlaceholders(sql) {
@@ -184,6 +172,34 @@ async function initDb() {
             await endSingleClient(client);
         }
     } else {
+        // Initialize SQLite (sql.js) runtime and DB file
+        try {
+            const initSqlJs = require('sql.js');
+            let SQL;
+            // Older sql.js versions exported the SQL object directly; newer versions export an init function
+            if (initSqlJs && initSqlJs.Database) {
+                SQL = initSqlJs;
+            } else if (typeof initSqlJs === 'function') {
+                // locateFile points to the packaged wasm; rely on module resolution
+                SQL = await initSqlJs({ locateFile: file => require.resolve('sql.js/dist/' + file) });
+            } else {
+                throw new Error('Unable to initialize sql.js');
+            }
+
+            const DB_PATH = path.join(__dirname, '..', 'database.sqlite');
+            if (fs.existsSync(DB_PATH)) {
+                const buffer = fs.readFileSync(DB_PATH);
+                db = new SQL.Database(buffer);
+                console.log('Loaded existing SQLite database');
+            } else {
+                db = new SQL.Database();
+                console.log('Created new SQLite database');
+            }
+        } catch (err) {
+            console.error('Error initializing sql.js SQLite database:', err);
+            throw err;
+        }
+
         // SQLite schema
         db.exec(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
