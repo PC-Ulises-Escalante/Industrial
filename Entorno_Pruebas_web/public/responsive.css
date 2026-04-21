@@ -75,38 +75,10 @@
     
     /* Schedule list improvements */
     .schedule-list {
-        padding-left: 2rem;
+        padding-left: 0.75rem;
     }
     .schedule-item {
         padding: 0.75rem 0.85rem;
-    }
-    .schedule-day-box {
-        width: 2.8rem;
-        height: 2.8rem;
-    }
-    .schedule-day {
-        font-size: 1.1rem;
-    }
-    .schedule-info {
-        min-width: 0;
-    }
-    .schedule-event {
-        font-size: 0.78rem;
-        white-space: normal;
-        word-break: break-word;
-    }
-    .schedule-timeline-line {
-        left: 4px;
-    }
-    .schedule-connector {
-        left: -2px;
-        width: 12px;
-        height: 12px;
-        z-index: 2;
-    }
-    .schedule-node {
-        width: 10px;
-        height: 10px;
     }
 }
 
@@ -407,24 +379,6 @@
         flex-direction: column;
         align-items: flex-start;
         padding: 0.75rem;
-    }
-    .schedule-timeline-line {
-        left: 4px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-    }
-    .schedule-connector {
-        left: -2px;
-        top: 0.5rem;
-        transform: none;
-        width: 12px;
-        height: 12px;
-        z-index: 2;
-    }
-    .schedule-node {
-        width: 10px;
-        height: 10px;
     }
     .schedule-day-box {
         width: 100%;

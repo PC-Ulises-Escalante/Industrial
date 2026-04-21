@@ -285,46 +285,7 @@
     flex-direction: column;
     gap: 0.65rem;
     position: relative;
-    padding-left: 2.3rem;
-}
-
-.schedule-timeline-line {
-    position: absolute;
-    left: 4px;
-    top: 12px;
-    bottom: 12px;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--cyan), var(--purple), rgba(34, 211, 238, 0.15));
-    border-radius: 2px;
-    z-index: 1;
-}
-
-.schedule-connector {
-    position: absolute;
-    left: -2px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 12px;
-    height: 12px;
-    z-index: 2;
-}
-
-.schedule-node {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--cyan);
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
-    transition: box-shadow 0.3s, background 0.3s;
-}
-
-.schedule-item:hover .schedule-node {
-    background: var(--cyan);
-    box-shadow: 0 0 16px rgba(34, 211, 238, 0.7);
+    padding-left: 0.75rem;
 }
 
 .schedule-item {
@@ -338,7 +299,6 @@
     gap: 0.75rem;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, border-color 0.3s;
     cursor: default;
-    z-index: 1;
 }
 
 .schedule-item:hover {
