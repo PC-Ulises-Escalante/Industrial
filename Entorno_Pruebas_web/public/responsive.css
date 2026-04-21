@@ -387,12 +387,6 @@
         height: auto;
         padding: 0.4rem 0.6rem;
     }
-    .schedule-label {
-        font-size: 0.65rem;
-    }
-    .schedule-day {
-        font-size: 1rem;
-    }
     .schedule-info {
         width: 100%;
         margin-top: 0.25rem;
