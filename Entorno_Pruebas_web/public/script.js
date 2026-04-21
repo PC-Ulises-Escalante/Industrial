@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 toggleActions: "play none none none"
             },
             opacity: 0,
-            x: -30,
+            y: 16,
             duration: 0.5,
             stagger: 0.1,
             ease: "power2.out"
