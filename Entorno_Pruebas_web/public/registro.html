@@ -39,7 +39,8 @@
     <section class="registro-hero">
         <span class="registro-badge">Inscripciones Abiertas</span>
         <h1 class="registro-title">Registro</h1>
-        <p class="registro-subtitle">Reserva tu lugar en la Semana Académica 2026. Selecciona tu tipo de asistente y completa el formulario.</p>
+        <p class="registro-subtitle">Reserva tu lugar en la Semana Académica de Ingeniería Industrial 2026.</p>
+        <p class="registro-steps"><strong>Regístrate</strong> &gt; <strong>Inicia Sesión</strong> &gt; <strong>Captura QR después de la actividad</strong></p>
     </section>
 
     <!-- FORM -->
@@ -416,7 +417,7 @@
                 if (res.ok) {
                     showToast("¡Registro de alumno completado exitosamente!");
                     form.reset();
-                    setTimeout(() => { window.location.href = 'index.html#inicio'; }, 900);
+                    setTimeout(() => { window.location.href = 'index.html'; setTimeout(() => location.reload(), 100); }, 900);
                 } else {
                     showToast(data.error || "Error al registrar");
                 }
@@ -479,7 +480,7 @@
                 if (res.ok) {
                     showToast("¡Registro de invitado completado exitosamente!");
                     form.reset();
-                    setTimeout(() => { window.location.href = 'index.html#inicio'; }, 900);
+                    setTimeout(() => { window.location.href = 'index.html'; setTimeout(() => location.reload(), 100); }, 900);
                 } else {
                     showToast(data.error || "Error al registrar");
                 }

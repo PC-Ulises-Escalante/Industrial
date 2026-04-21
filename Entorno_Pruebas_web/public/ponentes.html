@@ -32,10 +32,18 @@
     .file-btn { display:inline-flex; align-items:center; gap:8px; padding:0.5rem 0.85rem; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color:var(--slate-200); cursor:pointer; }
     .file-input-hidden { display:none; }
 
-    @media (max-width: 640px) {
-        .modal-card { margin: 1rem; max-width: 92%; }
-        #add-ponente-btn { top:12px; right:12px; padding:0.4rem 0.6rem; }
-        .ponentes-grid { grid-template-columns: 1fr; max-width: 420px; }
+    @media (max-width: 768px) {
+        .modal-card { margin: 0.5rem; max-width: calc(100% - 1rem); }
+        #add-ponente-btn { top: 60px; right: 10px; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+        .ponentes-grid { grid-template-columns: 1fr; max-width: 100%; gap: 0.75rem; }
+        .ponente-card { padding: 1rem; }
+        .footer-section { margin: 0.75rem; padding: 1rem; border-radius: 16px; }
+        .btn-primary, .btn-register, .btn-login { min-height: 44px; }
+    }
+    @media (max-width: 480px) {
+        .footer-section { margin: 0.5rem; padding: 0.75rem; }
+        .footer-col h3 { font-size: 0.9rem; }
+        .footer-col p { font-size: 0.78rem; }
     }
     </style>
 </head>

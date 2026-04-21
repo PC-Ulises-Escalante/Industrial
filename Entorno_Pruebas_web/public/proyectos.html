@@ -371,18 +371,24 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .proyectos-title {
-                font-size: 2.5rem;
-            }
-
-            .form-row {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .proyectos-grid {
-                grid-template-columns: 1fr;
-            }
+            .proyectos-title { font-size: 2rem; }
+            .form-row { flex-direction: column; gap: 16px; }
+            .proyectos-grid { grid-template-columns: 1fr; }
+            .proyecto-card { padding: 1rem; }
+            .proyecto-card h3 { font-size: 1rem; }
+            .proyecto-card p { font-size: 0.85rem; }
+            .footer-section { margin: 0.75rem; padding: 1rem; border-radius: 16px; }
+            .btn-primary, .btn-register, .btn-login { min-height: 44px; }
+            .modal-card { margin: 0.5rem; max-width: calc(100% - 1rem); }
+            #add-proyecto-btn { top: 60px; right: 10px; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+        }
+        @media (max-width: 480px) {
+            .proyectos-title { font-size: 1.6rem; }
+            .proyectos-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+            .form-row { gap: 12px; }
+            .footer-section { margin: 0.5rem; padding: 0.75rem; }
+            .footer-col h3 { font-size: 0.9rem; }
+            .footer-col p { font-size: 0.78rem; }
         }
     </style>
 </head>

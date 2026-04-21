@@ -250,11 +250,12 @@ console.debug('[auth.js] loaded');
             try { if (data && data.token) localStorage.setItem('token', data.token); } catch (e) { }
 
             hideLoginModal();
-            // Redirect admin to dashboard, others to home
+            // Redirect admin to dashboard, others to home with full reload
             if (data.user.rol === 'administrador') {
                 window.location.href = 'administrador.html';
             } else {
-                window.location.href = 'index.html#inicio';
+                window.location.href = 'index.html';
+                setTimeout(() => location.reload(), 100);
             }
         } catch (err) {
             console.debug('[auth.js] handleLogin error:', err);

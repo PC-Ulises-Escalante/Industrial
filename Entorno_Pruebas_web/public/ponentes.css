@@ -171,12 +171,51 @@
     }
 }
 
+@media (max-width: 768px) {
+    .ponentes-grid {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+    }
+    .ponentes-hero {
+        padding: 7rem 1.5rem 2rem;
+    }
+    .ponentes-hero h1 {
+        font-size: 2rem;
+    }
+    .footer-section {
+        margin: 0.75rem;
+        padding: 1rem;
+        border-radius: 16px;
+    }
+}
+
 @media (max-width: 640px) {
     .ponentes-grid {
         grid-template-columns: 1fr;
-        max-width: 400px;
+        max-width: 100%;
+        gap: 0.75rem;
     }
     .ponentes-hero {
-        padding: 8rem 1.5rem 2rem;
+        padding: 6rem 1rem 1.5rem;
+    }
+    .ponentes-hero h1 {
+        font-size: 1.75rem;
+    }
+    .ponente-card {
+        padding: 0.85rem;
+    }
+    .ponente-card h3 {
+        font-size: 0.95rem;
+    }
+    .ponente-card p {
+        font-size: 0.82rem;
+    }
+    .footer-section {
+        margin: 0.5rem;
+        padding: 0.75rem;
+    }
+    .btn-primary, .btn-register, .btn-login {
+        min-height: 44px;
+        min-width: 44px;
     }
 }

@@ -736,8 +736,6 @@
         padding: 0.6rem 1rem;
         font-size: 0.8rem;
     }
-}
-
     .charts-grid {
         grid-template-columns: 1fr;
     }
@@ -749,7 +747,7 @@
     }
 
     .admin-hero {
-        padding: 8rem 1.5rem 2rem;
+        padding: 6rem 1rem 1.5rem;
     }
 
     .admin-stats-section,
@@ -761,7 +759,7 @@
     }
 
     .chart-container {
-        height: 220px;
+        height: 200px;
     }
 
     .admin-table-wrapper {
@@ -774,6 +772,7 @@
 
     .users-filters {
         flex-direction: column;
+        gap: 0.5rem;
     }
 
     .filter-input {
@@ -789,5 +788,42 @@
         order: -1;
         width: 100%;
         justify-content: center;
+    }
+
+    .admin-table-section {
+        overflow-x: auto;
+    }
+
+    .users-filters > * {
+        width: 100%;
+    }
+
+    .btn-export-csv,
+    .btn-export-pdf {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-hero {
+        padding: 5.5rem 0.75rem 1rem;
+    }
+    .admin-stats-section,
+    .admin-table-section,
+    .admin-charts-section,
+    .users-filter-section {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    .footer-section {
+        margin: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+    .admin-btn, .table-btn {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.82rem;
     }
 }

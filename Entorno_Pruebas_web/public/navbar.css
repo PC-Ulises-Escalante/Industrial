@@ -34,6 +34,10 @@
     position: relative;
     transition: color 0.3s;
     cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
 }
 
 .nav-link:hover,
@@ -66,11 +70,18 @@
     font-weight: 600;
     transition: transform 0.3s, background 0.3s;
     cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
 }
 
 .btn-register:hover {
     transform: scale(1.03);
     background: #fff;
+}
+
+.btn-login {
+    min-height: 44px;
+    min-width: 44px;
 }
 
 /* Hide mobile-only elements on desktop. These are created dynamically by auth.js
@@ -82,8 +93,8 @@
 /* Mobile adjustments: reduce spacing and sizes so navbar fits small screens */
 @media (max-width: 640px) {
     .navbar {
-        padding: 0.5rem 1rem;
-        margin: 0.6rem 1rem;
+        padding: 0.5rem 0.75rem;
+        margin: 0.4rem 0.6rem;
         border-radius: 14px;
     }
 
@@ -93,40 +104,38 @@
 
     /* Ensure the drawer can show its own copy of links/auth */
     .nav-drawer .nav-links { display: block; }
-    .nav-drawer .nav-links .nav-link { display: block; padding: 10px 8px; color: var(--slate-200); border-radius: 8px; }
+    .nav-drawer .nav-links .nav-link { display: flex; align-items: center; padding: 12px 10px; color: var(--slate-200); border-radius: 8px; min-height: 48px; }
     .nav-drawer .nav-links .nav-link.active { color: var(--cyan); }
-    .nav-drawer .drawer-auth { display: block; }
+    .nav-drawer .drawer-auth { display: flex; flex-direction: column; gap: 0.75rem; }
 
-    /* Hamburger button */
+    /* Hamburger button - minimum 44x44px touch target */
     .nav-hamburger {
         display: inline-flex;
-        position: fixed; /* fixed so it sits above the drawer */
-        right: 16px;
-        top: 12px;
+        position: fixed;
+        right: 12px;
+        top: 10px;
         align-items: center;
         justify-content: center;
-        width: 44px;
-        height: 36px;
-        border-radius: 10px;
+        width: 48px;
+        height: 44px;
+        border-radius: 12px;
         border: 1px solid rgba(255,255,255,0.06);
-        /* darker semi-transparent background so it contrasts over drawer */
         background: rgba(6,10,18,0.72);
         color: var(--cyan);
         cursor: pointer;
-        z-index: 1500; /* above the drawer (1400) */
+        z-index: 1500;
         box-shadow: 0 6px 18px rgba(0,0,0,0.45);
     }
     .nav-hamburger[aria-expanded="true"] { background: rgba(10,14,24,0.86); }
-    .nav-hamburger .hamb-lines { display:inline-flex; flex-direction:column; gap:4px; }
-    .nav-hamburger .hamb-lines span { display:block; width:18px; height:2px; background:var(--cyan); border-radius:2px; }
+    .nav-hamburger .hamb-lines { display:inline-flex; flex-direction:column; gap:5px; }
+    .nav-hamburger .hamb-lines span { display:block; width:20px; height:2px; background:var(--cyan); border-radius:2px; }
 
     /* Drawer (slide from right) */
     .nav-drawer {
         position: fixed;
         top: 0;
         right: 0;
-        /* narrower drawer so main content stays visible */
-        width: min(260px, 72vw);
+        width: min(280px, 80vw);
         height: 100vh;
         transform: translateX(100%);
         transition: transform 0.28s ease;
@@ -139,27 +148,27 @@
     .nav-drawer .drawer-inner {
         width:100%;
         height:100%;
-        padding:18px;
+        padding: 60px 18px 18px;
         border-left:1px solid var(--glass-border);
-        /* slightly darker, semi-transparent background */
-        background: rgba(6,10,18,0.86);
-        backdrop-filter: blur(8px);
+        background: rgba(6,10,18,0.92);
+        backdrop-filter: blur(12px);
         display:flex;
         flex-direction:column;
-        gap:12px;
+        gap:8px;
         box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        overflow-y: auto;
     }
-    .nav-drawer .drawer-links { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
-    .nav-drawer .drawer-links .nav-link { font-size:0.95rem; padding:10px 10px; display:block; border-radius:8px; background: rgba(255,255,255,0.02); color: var(--slate-200); }
+    .nav-drawer .drawer-links { display:flex; flex-direction:column; gap:4px; margin-top:6px; }
+    .nav-drawer .drawer-links .nav-link { font-size:0.95rem; padding:12px 10px; display:flex; align-items:center; border-radius:8px; background: rgba(255,255,255,0.02); color: var(--slate-200); min-height: 48px; }
     .nav-drawer .drawer-links .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--cyan); }
     .nav-drawer .drawer-links .nav-link.active { color: var(--cyan); background: rgba(34,211,238,0.04); }
-    .nav-drawer .drawer-auth { margin-top:auto; }
+    .nav-drawer .drawer-auth { margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); }
 
-    /* Small clickable strip next to drawer so it doesn't cover all content; acts as visible affordance */
+    /* Small clickable strip next to drawer so it doesn't cover all content */
     .nav-drawer-strip {
         position: fixed;
         top: 0;
-        right: calc(var(--drawer-w, 260px));
+        right: calc(var(--drawer-w, 280px));
         width: 12px;
         height: 100vh;
         background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
@@ -168,9 +177,29 @@
         cursor: pointer;
     }
 
-    /* Make auth / buttons smaller */
-    .nav-user-info .nav-user-name { font-size: 0.82rem; }
-    .nav-role-badge { font-size: 0.68rem; padding: 0.18rem 0.45rem; }
-    .btn-register, .btn-login, .btn-admin-link, .btn-logout { padding: 0.45rem 0.8rem; font-size: 0.82rem; border-radius: 10px; }
-    .btn-register svg, .btn-admin-link svg, .btn-login svg, .btn-logout svg { width: 14px; height: 14px; }
+    /* Make auth / buttons touch-friendly */
+    .nav-drawer .btn-register,
+    .nav-drawer .btn-login,
+    .nav-drawer .btn-logout {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 12px;
+        min-height: 48px;
+    }
+    .nav-drawer .btn-register svg,
+    .nav-drawer .btn-admin-link svg,
+    .nav-drawer .btn-login svg,
+    .nav-drawer .btn-logout svg { width: 16px; height: 16px; }
+
+    /* Nav user info in drawer */
+    .nav-drawer .nav-user-info {
+        padding: 0.75rem;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.04);
+        margin-bottom: 0.5rem;
+    }
+    .nav-drawer .nav-user-name { font-size: 0.9rem; }
+    .nav-drawer .nav-role-badge { font-size: 0.72rem; padding: 0.2rem 0.5rem; }
 }

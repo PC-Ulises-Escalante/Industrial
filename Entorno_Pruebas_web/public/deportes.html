@@ -86,12 +86,23 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-        .deportes-title { font-size: 2.5rem; }
+        .deportes-title { font-size: 2rem; }
         .deportes-toggle { flex-wrap: wrap; }
         .deportes-toggle-btn { flex: 1; justify-content: center; }
-        .form-row { flex-direction: column; gap: 20px; }
+        .form-row { flex-direction: column; gap: 16px; }
         .dias-disponibles { grid-template-columns: repeat(2, 1fr); }
         .equipos-grid { grid-template-columns: 1fr; }
+        .footer-section { margin: 0.75rem; padding: 1rem; border-radius: 16px; }
+        .btn-primary, .btn-register, .btn-login { min-height: 44px; }
+        .modal-card { margin: 0.5rem; max-width: calc(100% - 1rem); }
+        #add-equipo-btn { top: 60px; right: 10px; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+    }
+    @media (max-width: 480px) {
+        .deportes-title { font-size: 1.6rem; }
+        .dias-disponibles { grid-template-columns: 1fr; }
+        .footer-section { margin: 0.5rem; padding: 0.75rem; }
+        .footer-col h3 { font-size: 0.9rem; }
+        .footer-col p { font-size: 0.78rem; }
     }
     </style>
 </head>

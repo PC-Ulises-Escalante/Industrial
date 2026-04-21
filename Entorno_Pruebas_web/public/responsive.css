@@ -1,6 +1,9 @@
 /* ═══════════════════════════════════════════
    RESPONSIVE - General breakpoints
+   Mobile-First approach with comprehensive support
    ═══════════════════════════════════════════ */
+
+/* Large screens - 1200px and above */
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -12,38 +15,91 @@
     }
 }
 
+/* Tablet and below - 1000px and below */
 @media (max-width: 1000px) {
+    /* Hero Section */
     .hero {
         padding: 7rem 1.5rem 2rem;
+        min-height: auto;
     }
     .hero-grid {
         grid-template-columns: 1fr;
         padding: 2.5rem 2rem;
+        gap: 2rem;
     }
     .hero-illustration {
-        min-height: 340px;
+        min-height: 300px;
+        order: -1;
     }
+    .hero-content {
+        text-align: center;
+    }
+    .hero-description {
+        max-width: 100%;
+    }
+    .hero-actions {
+        justify-content: center;
+    }
+    .hero-meta {
+        justify-content: center;
+    }
+    
+    /* Dashboard */
     .dashboard {
         padding: 2rem 1.5rem 4rem;
     }
+    .dashboard-grid {
+        gap: 1.5rem;
+    }
+    
+    /* Ejes Grid */
     .ejes-grid {
         grid-template-columns: 1fr;
     }
+    
+    /* Sticky Cards */
     .sticky-cards .card {
         width: calc(100% - 3rem);
-        height: 75%;
+        height: auto;
         flex-direction: column;
     }
     .card .col {
         width: 100%;
     }
+    
+    /* Footer */
     .footer-content {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
+    
+    /* Schedule list improvements */
+    .schedule-list {
+        padding-left: 1rem;
+    }
+    .schedule-item {
+        padding: 0.75rem 0.85rem;
+    }
+    .schedule-day-box {
+        width: 2.8rem;
+        height: 2.8rem;
+    }
+    .schedule-day {
+        font-size: 1.1rem;
+    }
+    .schedule-info {
+        min-width: 0;
+    }
+    .schedule-event {
+        font-size: 0.78rem;
+        white-space: normal;
+        word-break: break-word;
+    }
 }
 
+/* Mobile - 768px and below */
 @media (max-width: 768px) {
+    /* Navbar */
     .navbar {
         margin: 0.5rem;
         padding: 0.6rem 1rem;
@@ -54,26 +110,398 @@
         gap: 0.75rem;
         justify-content: center;
     }
+    
+    /* Hero */
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+        line-height: 1;
     }
     .hero-subtitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.15em;
+    }
+    .hero-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
     .hero-actions {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        gap: 1rem;
+    }
+    .btn-primary {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+        padding: 0.9rem 1.5rem;
     }
     .hero-meta {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
         gap: 0.5rem;
     }
     .meta-divider {
         display: none;
     }
+    
+    /* Speakers and Themes grids */
     .speakers-grid,
     .themes-mini-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    /* Dashboard sidebar */
+    .sidebar {
+        border-radius: 20px;
+        padding: 1rem;
+    }
+    .sidebar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    /* Schedule timeline - mobile adjustments */
+    .schedule-timeline-line {
+        left: 3px;
+    }
+    .schedule-node {
+        width: 10px;
+        height: 10px;
+    }
+    .schedule-item {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .schedule-info {
+        flex-basis: 100%;
+    }
+    .schedule-bar {
+        max-width: 100%;
+    }
+    
+    /* Footer */
+    .footer-section {
+        margin: 1rem;
+        padding: 1.5rem 1.5rem;
+        border-radius: 20px;
+    }
+    .footer-col {
+        text-align: center;
+    }
+    .social-links {
+        justify-content: center;
+    }
+    
+    /* Ejes section */
+    .ejes-header {
+        padding: 0 1rem;
+    }
+    .section-heading {
+        font-size: 1.75rem;
+    }
+    .section-subheading {
+        font-size: 0.9rem;
+    }
+    
+    /* Sticky cards */
+    .sticky-cards .card {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+        padding: 1.25rem;
+    }
+    .sticky-cards .card h1 {
+        font-size: 1.4rem;
+    }
+    .sticky-cards .card .card-text {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    .sticky-cards .card img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+}
+
+/* Small mobile - 640px and below */
+@media (max-width: 640px) {
+    /* Hero adjustments */
+    .hero {
+        padding: 6rem 1rem 1.5rem;
+    }
+    .hero-grid {
+        padding: 1.5rem 1.25rem;
+        border-radius: 20px;
+    }
+    .hero-illustration {
+        min-height: 220px;
+    }
+    .illus-logo {
+        width: clamp(12rem, 50vw, 16rem);
+        height: clamp(12rem, 50vw, 16rem);
+        border-radius: 18px;
+        padding: 0.8rem;
+    }
+    .illus-orbit-1 { width: 16rem; height: 16rem; }
+    .illus-orbit-2 { width: 20rem; height: 20rem; }
+    .illus-orbit-3 { width: 24rem; height: 24rem; }
+    .illus-glow { inset: -1.5rem; }
+    
+    .badge {
+        padding: 0.4rem 1rem;
+        font-size: 0.75rem;
+    }
+    .hero-title {
+        font-size: 1.85rem;
+    }
+    .hero-subtitle {
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+    }
+    .hero-description {
+        font-size: 0.88rem;
+        margin-top: 1.2rem;
+    }
+    
+    /* Dashboard */
+    .dashboard {
+        padding: 1rem 0.75rem 3rem;
+    }
+    .main-content {
+        padding: 0;
+    }
+    
+    /* Sidebar sections */
+    .sidebar-section {
+        padding: 0.75rem 0;
+    }
+    .sidebar-title {
+        font-size: 0.85rem;
+    }
+    .themes-mini-grid {
+        grid-template-columns: 1fr;
+    }
+    .theme-mini-card {
+        padding: 0.6rem 0.75rem;
+    }
+    
+    /* Speakers */
+    .speakers-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .speaker-card {
+        padding: 0.75rem;
+    }
+    
+    /* Schedule list */
+    .schedule-item {
+        padding: 0.6rem 0.5rem;
+        gap: 0.4rem;
+    }
+    .schedule-day-box {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 10px;
+    }
+    .schedule-label {
+        font-size: 0.45rem;
+    }
+    .schedule-day {
+        font-size: 0.95rem;
+    }
+    .schedule-event {
+        font-size: 0.72rem;
+        line-height: 1.3;
+    }
+    
+    /* Footer */
+    .footer-section {
+        margin: 0.75rem;
+        padding: 1.25rem 1rem;
+        border-radius: 16px;
+    }
+    .footer-bottom {
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+    
+    /* Touch target improvements - minimum 44x44px */
+    .btn-primary,
+    .btn-register,
+    .btn-login,
+    .social-link,
+    .theme-mini-card,
+    .speaker-card,
+    .eje-card,
+    .schedule-item {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Admin buttons and interactive elements */
+    .admin-btn,
+    .table-btn,
+    .filter-input,
+    .filter-select {
+        min-height: 44px;
+    }
+}
+
+/* Extra small mobile - 480px and below */
+@media (max-width: 480px) {
+    .hero {
+        padding: 5.5rem 0.75rem 1rem;
+    }
+    .hero-grid {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    .hero-title {
+        font-size: 1.6rem;
+    }
+    .hero-subtitle {
+        font-size: 0.7rem;
+    }
+    .hero-description {
+        font-size: 0.82rem;
+    }
+    .btn-primary {
+        padding: 0.8rem 1.25rem;
+        font-size: 0.88rem;
+        border-radius: 12px;
+    }
+    
+    /* Dashboard - full width on small screens */
+    .dashboard {
+        padding: 0.75rem 0.5rem 2.5rem;
+    }
+    .sidebar {
+        padding: 0.75rem;
+        border-radius: 16px;
+    }
+    .sidebar-date,
+    .sidebar-status-badge,
+    .sidebar-location {
+        font-size: 0.78rem;
+    }
+    
+    /* Schedule items - stack vertically */
+    .schedule-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.75rem;
+    }
+    .schedule-connector {
+        position: absolute;
+        left: -0.75rem;
+        top: 0.75rem;
+    }
+    .schedule-day-box {
+        width: 100%;
+        flex-direction: row;
+        gap: 0.5rem;
+        height: auto;
+        padding: 0.4rem 0.6rem;
+    }
+    .schedule-label {
+        font-size: 0.65rem;
+    }
+    .schedule-day {
+        font-size: 1rem;
+    }
+    .schedule-info {
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+    
+    /* Ejes cards */
+    .eje-card {
+        padding: 1rem;
+    }
+    .eje-number {
+        font-size: 2rem;
+    }
+    .eje-title {
+        font-size: 1rem;
+    }
+    .eje-desc {
+        font-size: 0.85rem;
+    }
+    
+    /* Sticky cards */
+    .sticky-cards .card {
+        margin: 0.5rem;
+        width: calc(100% - 1rem);
+        padding: 1rem;
+    }
+    .sticky-cards .card h1 {
+        font-size: 1.2rem;
+    }
+    
+    /* Footer small */
+    .footer-section {
+        margin: 0.5rem;
+        padding: 1rem 0.75rem;
+    }
+    .footer-col h3 {
+        font-size: 0.9rem;
+    }
+    .footer-col p {
+        font-size: 0.78rem;
+    }
+    .footer-bottom p {
+        font-size: 0.68rem;
+    }
+    
+    /* Navbar drawer - full width on very small screens */
+    .nav-drawer {
+        width: 85vw;
+    }
+    .nav-drawer-strip {
+        width: 8px;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero {
+        min-height: auto;
+        padding: 5rem 1.5rem 2rem;
+    }
+    .hero-grid {
+        padding: 1.5rem 2rem;
+    }
+    .hero-illustration {
+        min-height: 200px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .navbar,
+    .sidebar,
+    .footer-section,
+    .hero-grid {
+        border-width: 2px;
+    }
+    .nav-link,
+    .footer-col p,
+    .hero-description {
+        color: var(--white);
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

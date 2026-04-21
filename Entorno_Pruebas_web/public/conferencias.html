@@ -53,11 +53,21 @@
     .add-conferencia-form .form-group{ margin-bottom:12px; display:flex; flex-direction:column; }
     .add-conferencia-form input[type="text"], .add-conferencia-form input[type="date"], .add-conferencia-form textarea{ width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(148,163,184,0.06); color:#cbd5e1; }
 
-    @media (max-width: 640px) {
-        .conferencias-title { font-size: 2.5rem; }
-        .conferencias-grid { grid-template-columns: 1fr; padding: 0 16px; }
-        .modal-card { margin: 1rem; max-width: 92%; }
-        #add-conferencia-btn { top:12px; right:12px; padding:0.4rem 0.6rem; }
+    @media (max-width: 768px) {
+        .conferencias-title { font-size: 2rem; }
+        .conferencias-grid { grid-template-columns: 1fr; padding: 0 12px; }
+        .modal-card { margin: 0.5rem; max-width: calc(100% - 1rem); }
+        #add-conferencia-btn { top: 60px; right: 10px; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+        .form-row { flex-direction: column; gap: 12px; }
+        .footer-section { margin: 0.75rem; padding: 1rem; border-radius: 16px; }
+        .btn-primary, .btn-register, .btn-login { min-height: 44px; }
+    }
+    @media (max-width: 480px) {
+        .conferencias-title { font-size: 1.6rem; }
+        .conferencias-grid { padding: 0 8px; }
+        .footer-section { margin: 0.5rem; padding: 0.75rem; }
+        .footer-col h3 { font-size: 0.9rem; }
+        .footer-col p { font-size: 0.78rem; }
     }
     </style>
 </head>

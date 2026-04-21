@@ -290,9 +290,9 @@
 
 .schedule-timeline-line {
     position: absolute;
-    left: 5px;
-    top: 12px;
-    bottom: 12px;
+    left: 4px;
+    top: 0;
+    bottom: 0;
     width: 2px;
     background: linear-gradient(to bottom, var(--cyan), var(--purple), rgba(34, 211, 238, 0.15));
     border-radius: 2px;
@@ -305,6 +305,7 @@
     transform: translateY(-50%);
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .schedule-node {
