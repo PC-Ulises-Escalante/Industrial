@@ -291,8 +291,8 @@
 .schedule-timeline-line {
     position: absolute;
     left: 4px;
-    top: 0;
-    bottom: 0;
+    top: 12px;
+    bottom: 12px;
     width: 2px;
     background: linear-gradient(to bottom, var(--cyan), var(--purple), rgba(34, 211, 238, 0.15));
     border-radius: 2px;
@@ -300,12 +300,14 @@
 
 .schedule-connector {
     position: absolute;
-    left: -1.25rem;
+    left: -15px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 10px;
+    height: 10px;
 }
 
 .schedule-node {

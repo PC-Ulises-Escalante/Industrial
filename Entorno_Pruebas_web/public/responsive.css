@@ -95,6 +95,18 @@
         white-space: normal;
         word-break: break-word;
     }
+    .schedule-timeline-line {
+        left: 4px;
+    }
+    .schedule-connector {
+        left: -15px;
+        width: 10px;
+        height: 10px;
+    }
+    .schedule-node {
+        width: 10px;
+        height: 10px;
+    }
 }
 
 /* Mobile - 768px and below */
@@ -395,10 +407,23 @@
         align-items: flex-start;
         padding: 0.75rem;
     }
+    .schedule-timeline-line {
+        left: 4px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+    }
     .schedule-connector {
         position: absolute;
-        left: -0.75rem;
-        top: 0.75rem;
+        left: -15px;
+        top: 0.5rem;
+        transform: none;
+        width: 10px;
+        height: 10px;
+    }
+    .schedule-node {
+        width: 10px;
+        height: 10px;
     }
     .schedule-day-box {
         width: 100%;
