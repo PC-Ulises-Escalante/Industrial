@@ -99,7 +99,7 @@
         left: 4px;
     }
     .schedule-connector {
-        left: -15px;
+        left: 5px;
         width: 10px;
         height: 10px;
     }
@@ -415,7 +415,7 @@
     }
     .schedule-connector {
         position: absolute;
-        left: -15px;
+        left: 5px;
         top: 0.5rem;
         transform: none;
         width: 10px;

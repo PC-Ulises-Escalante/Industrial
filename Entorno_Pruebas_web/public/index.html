@@ -22,16 +22,16 @@
     <!-- NAVBAR -->
     <nav class="navbar glass" id="navbar">
         <div class="nav-links">
-            <a href="#inicio" class="nav-link active">Inicio</a>
-            <a href="#agMayo Mayo enda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="index.html#inicio" class="nav-link">Inicio</a>
+            <a href="index.html#agenda" class="nav-link">Cronograma y Ejes Temáticos</a>
+            <a href="index.html#historia" class="nav-link">Historia</a>
             <a href="ponentes.html" class="nav-link">Ponentes</a>
             <a href="conferencias.html" class="nav-link">Conferencias</a>
             <a href="deportes.html" class="nav-link">Deportes</a>
-            <a href="proyectos.html" class="nav-link">Proyectos</a>
+            <a href="proyectos.html" class="nav-link active">Proyectos</a>
             <a href="embellecimiento.html" class="nav-link">Embellecimiento</a>
-            <a href="#historia" class="nav-link">Historia</a>
-            <a href="#contacto" class="nav-link">Contacto</a>
         </div>
+        <div class="nav-auth" id="nav-auth"></div>
         <div class="nav-auth" id="nav-auth">
             <!-- Fallback visible markup in case JS fails to initialize -->
             <button class="btn-login" id="btn-login">Iniciar Sesión</button>
@@ -50,13 +50,20 @@
                 </div>
                 <h1 class="hero-title">SEMANA<br>ACADÉMICA 2026</h1>
                 <h2 class="hero-subtitle">INGENIERÍA INDUSTRIAL</h2>
-                <p class="hero-description">Innovación, tecnología y el futuro de la industria. Una experiencia visual moderna, educativa y de nivel profesional en el Instituto Tecnológico de Tijuana.</p>
+                <p class="hero-description">Reserva tu lugar en la Semana Académica de Ingeniería Industrial 2026.</p>
+                <p class="hero-steps">
+                    <a href="registro.html" class="step-link"><strong>Regístrate</strong></a>
+                    &gt;
+                    <a href="#" id="open-login-step" class="step-link"><strong>Inicia Sesión</strong></a>
+                    &gt;
+                    <a href="#" id="open-qr-tutorial" class="step-link"><strong>Captura QR para registrar asistencia</strong></a>
+                </p>
                 <div class="hero-actions">
                     <a href="registro.html" class="btn-primary">Regístrate ahora</a>
                     <div class="hero-meta">
                         <span class="meta-item">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            Abril 
+                            Abril 20-27, 2026
                         </span>
                         <span class="meta-divider"></span>
                         <span class="meta-item">
@@ -83,6 +90,33 @@
             </div>
         </div>
     </section>
+
+    <!-- QR TUTORIAL POPUP -->
+    <div id="qr-tutorial-popup" class="tutorial-popup" style="display: none;">
+        <div class="tutorial-backdrop"></div>
+        <div class="tutorial-card">
+            <button id="close-qr-tutorial" class="tutorial-close" aria-label="Cerrar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="tutorial-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <h2 class="tutorial-title">¿Cómo registrar tu asistencia?</h2>
+            <p class="tutorial-subtitle">Sigue estos pasos para que tu asistencia sea válida:</p>
+            <ol class="tutorial-steps">
+                <li><span class="step-num">1</span><span><strong>Regístrate</strong> en la página con tus datos</span></li>
+                <li><span class="step-num">2</span><span><strong>Inicia sesión</strong> con tu cuenta</span></li>
+                <li><span class="step-num">3</span><span><strong>Inscríbete</strong> en la conferencia o actividad que deseas asistir</span></li>
+                <li><span class="step-num">4</span><span><strong>Acercate con el staff</strong> para escanear el QR al terminar la actividad</span></li>
+                <li><span class="step-num">5</span><span><strong>Asegúrate</strong> de tener la sesión iniciada en tu navegador (Google, Brave, Safari)</span></li>
+                <li><span class="step-num">6</span><span><strong>Verifica</strong> que aparezca "Asistencia registrada" en la página</span></li>
+            </ol>
+            <div class="tutorial-note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>Sin sesión iniciada, el QR no registrará tu asistencia</span>
+            </div>
+        </div>
+    </div>
 
     <!-- DASHBOARD: Sidebar + Main Content -->
     <section class="dashboard" id="agenda">
@@ -478,5 +512,42 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="/script.js"></script>
     <script src="/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var qrPopup = document.getElementById('qr-tutorial-popup');
+            var openQrBtn = document.getElementById('open-qr-tutorial');
+            var closeQrBtn = document.getElementById('close-qr-tutorial');
+            var backdrop = qrPopup ? qrPopup.querySelector('.tutorial-backdrop') : null;
+
+            if (openQrBtn && qrPopup) {
+                openQrBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    qrPopup.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+
+            function closeTutorial() {
+                if (qrPopup) {
+                    qrPopup.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+
+            if (closeQrBtn) {
+                closeQrBtn.addEventListener('click', closeTutorial);
+            }
+
+            if (backdrop) {
+                backdrop.addEventListener('click', closeTutorial);
+            }
+
+            document.addEventListener('keydown', function escHandler(e) {
+                if (e.key === 'Escape' && qrPopup && qrPopup.style.display === 'flex') {
+                    closeTutorial();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -40,8 +40,41 @@
         <span class="registro-badge">Inscripciones Abiertas</span>
         <h1 class="registro-title">Registro</h1>
         <p class="registro-subtitle">Reserva tu lugar en la Semana Académica de Ingeniería Industrial 2026.</p>
-        <p class="registro-steps"><strong>Regístrate</strong> &gt; <strong>Inicia Sesión</strong> &gt; <strong>Captura QR después de la actividad</strong></p>
+        <p class="registro-steps">
+            <a href="#form-alumno" class="step-link"><strong>Regístrate</strong></a>
+            &gt;
+            <a href="#" id="open-login-step" class="step-link"><strong>Inicia Sesión</strong></a>
+            &gt;
+            <a href="#" id="open-qr-tutorial" class="step-link"><strong>Captura QR para registrar asistencia</strong></a>
+        </p>
     </section>
+
+    <!-- QR TUTORIAL POPUP -->
+    <div id="qr-tutorial-popup" class="tutorial-popup" style="display: none;">
+        <div class="tutorial-backdrop"></div>
+        <div class="tutorial-card">
+            <button id="close-qr-tutorial" class="tutorial-close" aria-label="Cerrar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="tutorial-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <h2 class="tutorial-title">¿Cómo registrar tu asistencia?</h2>
+            <p class="tutorial-subtitle">Sigue estos pasos para que tu asistencia sea válida:</p>
+            <ol class="tutorial-steps">
+                <li><span class="step-num">1</span><span><strong>Regístrate</strong> en la página con tus datos</span></li>
+                <li><span class="step-num">2</span><span><strong>Inicia sesión</strong> con tu cuenta</span></li>
+                <li><span class="step-num">3</span><span><strong>Inscríbete</strong> en la conferencia o actividad que deseas asistir</span></li>
+                <li><span class="step-num">4</span><span><strong>Acercate con el staff</strong> para escanear el QR al terminar la actividad</span></li>
+                <li><span class="step-num">5</span><span><strong>Asegúrate</strong> de tener la sesión iniciada en tu navegador (Google, Brave, Safari)</span></li>
+                <li><span class="step-num">6</span><span><strong>Verifica</strong> que aparezca "Asistencia registrada" en la página</span></li>
+            </ol>
+            <div class="tutorial-note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>Sin sesión iniciada, el QR no registrará tu asistencia</span>
+            </div>
+        </div>
+    </div>
 
     <!-- FORM -->
     <section class="registro-form-section">
@@ -495,6 +528,54 @@
                 submitBtn.innerHTML = 'Completar Registro <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
             }
         });
+
+        // QR Tutorial Popup
+        const qrPopup = document.getElementById('qr-tutorial-popup');
+        const openQrBtn = document.getElementById('open-qr-tutorial');
+        const closeQrBtn = document.getElementById('close-qr-tutorial');
+        const backdrop = qrPopup?.querySelector('.tutorial-backdrop');
+
+        if (openQrBtn && qrPopup) {
+            openQrBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                qrPopup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        function closeTutorial() {
+            if (qrPopup) {
+                qrPopup.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (closeQrBtn) {
+            closeQrBtn.addEventListener('click', closeTutorial);
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', closeTutorial);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && qrPopup && qrPopup.style.display === 'flex') {
+                closeTutorial();
+            }
+        });
+
+        // Open login modal from step link
+        const openLoginStep = document.getElementById('open-login-step');
+        if (openLoginStep) {
+            openLoginStep.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (typeof window.showLoginModal === 'function') {
+                    window.showLoginModal();
+                } else {
+                    window.location.href = 'index.html#inicio';
+                }
+            });
+        }
     });
     </script>
     <script src="/auth.js"></script>
