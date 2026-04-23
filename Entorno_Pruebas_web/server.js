@@ -290,6 +290,29 @@ app.get('/api/session', (req, res) => {
 app.post('/api/register', async (req, res) => {
     const { nombre, email, rol, numero_control, semestre, sexo, horario, edad, password } = req.body;
 
+    // Control de registro: por defecto los registros nuevos están deshabilitados
+    // a menos que se permita mediante la variable de entorno `ALLOW_REGISTRATION`
+    // o se pase una fecha límite `REGISTRATION_CUTOFF=YYYY-MM-DD` o con hora.
+    const allowRegistrationEnv = (process.env.ALLOW_REGISTRATION === '1' || process.env.ALLOW_REGISTRATION === 'true');
+    const regCutoffRaw = process.env.REGISTRATION_CUTOFF || process.env.REGISTRATION_ALLOWED_UNTIL;
+    let registrationAllowed = !!allowRegistrationEnv;
+    if (!registrationAllowed && regCutoffRaw) {
+        let cutoff;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(regCutoffRaw)) {
+            // si se pasa solo fecha, permitir hasta el final del día local
+            cutoff = new Date(regCutoffRaw + 'T23:59:59');
+        } else {
+            cutoff = new Date(regCutoffRaw);
+        }
+        if (!isNaN(cutoff.getTime())) {
+            registrationAllowed = Date.now() <= cutoff.getTime();
+        }
+    }
+
+    if (!registrationAllowed) {
+        return res.status(403).json({ error: 'Registro deshabilitado. Solo usuarios existentes pueden iniciar sesión.' });
+    }
+
     if (!nombre || !email) {
         return res.status(400).json({ error: 'Nombre y email son requeridos' });
     }

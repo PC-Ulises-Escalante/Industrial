@@ -332,6 +332,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // Desactivar registro en el cliente por defecto. Para reactivar,
+        // configurar `window.REGISTRATION_OPEN = true` antes de cargar este script
+        const REGISTRATION_OPEN = (typeof window.REGISTRATION_OPEN !== 'undefined') ? Boolean(window.REGISTRATION_OPEN) : false;
+        if (!REGISTRATION_OPEN) {
+            const badge = document.querySelector('.registro-badge');
+            if (badge) badge.textContent = 'Registro cerrado';
+            const formCard = document.querySelector('.registro-card');
+            if (formCard) {
+                const note = document.createElement('div');
+                note.className = 'registro-closed-note';
+                note.style.cssText = 'background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;margin-bottom:12px;font-weight:600;color:var(--muted);';
+                note.textContent = 'Registro cerrado. No se aceptan nuevos registros después del periodo de inscripción.';
+                formCard.insertBefore(note, formCard.firstChild);
+            }
+            document.querySelectorAll('.registro-submit').forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = 'Registro cerrado';
+                btn.addEventListener('click', (e) => { e.preventDefault(); alert('Registro cerrado. No se permiten nuevos usuarios.'); });
+            });
+            document.querySelectorAll('.registro-steps a').forEach(a => { if (a.getAttribute('href') && a.getAttribute('href').includes('registro')) a.remove(); });
+        }
+
         /* ── Lenis ── */
         const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 0.8 });
         (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(performance.now());
