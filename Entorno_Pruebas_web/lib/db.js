@@ -438,9 +438,7 @@ async function queryOne(sql, params) {
     } else {
         const stmt = db.prepare(sql);
         if (params) {
-            for (let i = 0; i < params.length; i++) {
-                stmt.bind([i + 1, params[i]]);
-            }
+            stmt.bind(params);
         }
         const result = stmt.step() ? stmt.getAsObject() : null;
         stmt.free();
@@ -457,9 +455,7 @@ async function queryAll(sql, params) {
     } else {
         const stmt = db.prepare(sql);
         if (params) {
-            for (let i = 0; i < params.length; i++) {
-                stmt.bind([i + 1, params[i]]);
-            }
+            stmt.bind(params);
         }
         const rows = [];
         while (stmt.step()) {
@@ -478,9 +474,7 @@ async function run(sql, params) {
     } else {
         if (params) {
             const stmt = db.prepare(sql);
-            for (let i = 0; i < params.length; i++) {
-                stmt.bind([i + 1, params[i]]);
-            }
+            stmt.bind(params);
             stmt.step();
             stmt.free();
         } else {
