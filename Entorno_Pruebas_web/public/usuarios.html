@@ -55,6 +55,34 @@
         <p class="admin-subtitle">Administra los perfiles registrados en la Semana Académica 2026</p>
     </section>
 
+    <!-- SABATINO: sección separada para alumnos sabatinos -->
+    <section class="admin-table-section sabatino-section" id="sabatino-section" style="margin-bottom:18px;">
+        <div class="admin-table-wrapper">
+            <h3 style="margin:0 0 8px 0; font-size:16px;">Alumnos Sabatinos</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Horario</th>
+                        <th>Núm. Control</th>
+                        <th>Semestre</th>
+                        <th style="min-width: 130px;">Crédito Comple.</th>
+                        <th>Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="sabatino-table-body">
+                    <tr>
+                        <td colspan="10" class="admin-empty">Cargando alumnos sabatinos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
     <!-- FILTERS -->
     <section class="users-filter-section">
         <div class="users-filters">
@@ -70,6 +98,7 @@
                 <option value="">Todos los turnos</option>
                 <option value="matutino">Matutino</option>
                 <option value="vespertino">Vespertino</option>
+                <option value="sabatino">Sabatino</option>
             </select>
             <select class="filter-select" id="filter-semestre">
                 <option value="">Todos los semestres</option>
@@ -168,6 +197,15 @@
         document.addEventListener("DOMContentLoaded", () => {
             let allUsers = [];
             let currentUserRole = null;
+
+            // Helper para mostrar label legible de horario
+            function horarioDisplay(h) {
+                if (!h) return '';
+                if (h === 'vespertino') return 'Vespertino';
+                if (h === 'matutino') return 'Matutino';
+                if (h === 'sabatino') return 'Sabatino';
+                return h;
+            }
 
             /* ── Helper: use apiFetch from auth.js (sends JWT token), fallback to fetch ── */
             function authFetch(url, opts) {
@@ -278,6 +316,8 @@
 
                 window.filteredUsersExport = filtered;
                 renderTable(filtered);
+                // Actualizar sección separada de Sabatino (muestra todos los sabatinos)
+                renderSabatinoSection(allUsers);
             }
 
             /* ── Render Table ── */
@@ -308,7 +348,7 @@
                         : `<span class="role-badge role-badge-${u.rol}">${u.rol}</span>`
                     }
                     </td>
-                    <td>${u.horario ? (u.horario === 'vespertino' ? 'Vespertino' : (u.horario === 'matutino' ? 'Matutino' : escapeHtml(u.horario))) : '—'}</td>
+                    <td>${horarioDisplay(u.horario) || '—'}</td>
                     <td>${u.numero_control || '—'}</td>
                     <td>${u.semestre || '—'}</td>
                     <td>
@@ -346,6 +386,78 @@
                                     const user = allUsers.find(u => u.id == userId);
                                     if (user) user.rol = newRole;
                                     // Update the data-original attribute so reverting works correctly
+                                    e.target.dataset.original = newRole;
+                                    // Refresh Sabatino section if present
+                                    try { renderSabatinoSection(allUsers); } catch (e) { /* ignore */ }
+                                } else {
+                                    const data = await res.json();
+                                    showToast(data.error || 'Error al actualizar rol', true);
+                                    e.target.value = e.target.dataset.original;
+                                }
+                            } catch {
+                                showToast('Error de conexión', true);
+                                e.target.value = e.target.dataset.original;
+                            }
+                        });
+                    });
+                }
+            }
+
+            /* ── Render Sabatino Section ── */
+            function renderSabatinoSection(users) {
+                const tbody = document.getElementById('sabatino-table-body');
+                if (!tbody) return;
+                const sab = (users || []).filter(u => u.rol === 'alumno' && u.horario === 'sabatino');
+                if (sab.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="admin-empty">No hay alumnos sabatinos</td></tr>`;
+                    return;
+                }
+                const isAdmin = currentUserRole === 'administrador';
+                tbody.innerHTML = sab.map(u => `
+                    <tr data-id="${u.id}">
+                        <td>${u.id}</td>
+                        <td>${escapeHtml(u.nombre)}</td>
+                        <td>${escapeHtml(u.email)}</td>
+                        <td>
+                            ${isAdmin
+                                ? `<select class="role-edit-select" data-id="${u.id}" data-original="${u.rol}">
+                                        <option value="alumno" ${u.rol === 'alumno' ? 'selected' : ''}>Alumno</option>
+                                        <option value="invitado" ${u.rol === 'invitado' ? 'selected' : ''}>Invitado</option>
+                                        <option value="maestro" ${u.rol === 'maestro' ? 'selected' : ''}>Maestro</option>
+                                        <option value="administrador" ${u.rol === 'administrador' ? 'selected' : ''}>Admin</option>
+                                   </select>`
+                                : `<span class="role-badge role-badge-${u.rol}">${u.rol}</span>`
+                            }
+                        </td>
+                        <td>${horarioDisplay(u.horario) || '—'}</td>
+                        <td>${u.numero_control || '—'}</td>
+                        <td>${u.semestre || '—'}</td>
+                        <td>${u.rol === 'alumno' ? (u.credito_complementario ? '<span class="role-badge" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">Acreedor</span>' : '<span class="role-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">No Cumple</span>') : '—'}</td>
+                        <td>${formatDate(u.created_at)}</td>
+                        <td>
+                            <div class="table-actions">
+                                ${isAdmin ? `<button class="table-btn table-btn-danger" onclick="deleteUser(${u.id}, '${escapeHtml(u.nombre)}')">Eliminar</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Attach role-change handlers for admin selects in sabatino table
+                if (isAdmin) {
+                    tbody.querySelectorAll('.role-edit-select').forEach(select => {
+                        select.addEventListener('change', async (e) => {
+                            const userId = e.target.dataset.id;
+                            const newRole = e.target.value;
+                            try {
+                                const res = await authFetch(`/api/users/${userId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ rol: newRole })
+                                });
+                                if (res.ok) {
+                                    showToast(`Rol actualizado a "${newRole}"`);
+                                    const user = allUsers.find(u => u.id == userId);
+                                    if (user) user.rol = newRole;
                                     e.target.dataset.original = newRole;
                                 } else {
                                     const data = await res.json();
@@ -478,7 +590,8 @@
                         doc.text('Fecha y hora de generación: ' + fechaHora, 10, y);
                     }
 
-                    // SECTION 1: ALUMNOS
+                    // SECTION 1: ALUMNOS (usa filtros activos)
+                    const filteredAlumnos = window.filteredUsersExport || allUsers;
                     addHeader(doc, 8);
                     let currentY = 36;
                     addFechaHora(doc, currentY);
@@ -491,15 +604,15 @@
                     doc.setFontSize(7);
                     doc.setFont('helvetica', 'normal');
                     doc.setTextColor(71, 85, 105);
-                    doc.text('Total: ' + alumnos.length + ' registro(s)', 10, currentY);
+                    doc.text('Total: ' + filteredAlumnos.length + ' registro(s)', 10, currentY);
                     currentY += 3;
 
-                    const alumRows = alumnos.map(u => [
+                    const alumRows = filteredAlumnos.map(u => [
                         u.id,
                         u.nombre || '',
                         u.email || '',
                         u.rol || '',
-                        u.horario ? (u.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        horarioDisplay(u.horario),
                         u.numero_control || '',
                         u.semestre || '',
                         u.rol === 'alumno' ? (u.credito_complementario ? 'Acreedor' : 'No Cumple') : '—',
@@ -542,7 +655,7 @@
                         eq.integrantes ? eq.integrantes.length : (eq.integrantes_array ? eq.integrantes_array.length : 0),
                         eq.horario || '',
                         eq.ubicacion || '',
-                        eq.horario ? (eq.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        horarioDisplay(eq.horario),
                         eq.created_at ? formatDate(eq.created_at) : ''
                     ]);
                     doc.autoTable({
@@ -581,7 +694,7 @@
                         p.descripcion || '',
                         p.horario || '',
                         p.ubicacion || '',
-                        p.horario ? (p.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        horarioDisplay(p.horario),
                         p.integrantes ? p.integrantes.length : (p.integrantes_array ? p.integrantes_array.length : 0),
                         p.created_at ? formatDate(p.created_at) : ''
                     ]);
@@ -622,7 +735,7 @@
                         c.horario || '',
                         c.ubicacion || '',
                         c.cupo || c.capacidad || '',
-                        c.horario ? (c.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '',
+                        horarioDisplay(c.horario),
                         c.created_at ? formatDate(c.created_at) : ''
                     ]);
                     doc.autoTable({
@@ -683,10 +796,11 @@
                     rows.push('Fecha y hora de generación: ' + now.toLocaleString('es-MX'));
                     rows.push('');
 
-                    // SECTION 1: ALUMNOS
+                    // SECTION 1: ALUMNOS (usa filtros activos)
+                    const filteredAlumnosCsv = window.filteredUsersExport || allUsers;
                     rows.push('SECCION 1: ALUMNOS REGISTRADOS');
                     rows.push(['ID', 'Nombre', 'Email', 'Rol', 'Horario', 'Num_Control', 'Semestre', 'Credito_Complementario', 'Registro'].join(','));
-                    alumnos.forEach(u => {
+                    filteredAlumnosCsv.forEach(u => {
                         const cred = u.rol === 'alumno' ? (u.credito_complementario ? 'Acreedor' : 'No Cumple') : '';
                         rows.push([u.id, escapeCsv(u.nombre), escapeCsv(u.email), u.rol || '', u.horario || '', u.numero_control || '', u.semestre || '', cred, formatDate(u.created_at)].join(','));
                     });
@@ -697,7 +811,7 @@
                     rows.push(['ID', 'Nombre del Equipo', 'Deporte', 'Categoria', 'Integrantes', 'Horario', 'Ubicacion', 'Turno', 'Registro'].join(','));
                     equipos.forEach(eq => {
                         const integ = eq.integrantes ? eq.integrantes.length : (eq.integrantes_array ? eq.integrantes_array.length : 0);
-                        const turno = eq.horario ? (eq.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '';
+                        const turno = horarioDisplay(eq.horario);
                         rows.push([eq.id, escapeCsv(eq.nombre_equipo || eq.nombre || ''), escapeCsv(eq.deporte || ''), escapeCsv(eq.categoria || ''), integ, eq.horario || '', escapeCsv(eq.ubicacion || ''), turno, formatDate(eq.created_at)].join(','));
                     });
                     rows.push('');
@@ -707,7 +821,7 @@
                     rows.push(['ID', 'Nombre', 'Categoria', 'Descripcion', 'Horario', 'Ubicacion', 'Turno', 'Integrantes', 'Registro'].join(','));
                     proyectos.forEach(p => {
                         const integ = p.integrantes ? p.integrantes.length : (p.integrantes_array ? p.integrantes_array.length : 0);
-                        const turno = p.horario ? (p.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '';
+                        const turno = horarioDisplay(p.horario);
                         rows.push([p.id, escapeCsv(p.nombre || p.titulo || ''), escapeCsv(p.categoria || ''), escapeCsv(p.descripcion || ''), p.horario || '', escapeCsv(p.ubicacion || ''), turno, integ, formatDate(p.created_at)].join(','));
                     });
                     rows.push('');
@@ -716,7 +830,7 @@
                     rows.push('SECCION 4: CONFERENCIAS');
                     rows.push(['ID', 'Nombre', 'Ponente', 'Fecha', 'Horario', 'Ubicacion', 'Cupo', 'Turno', 'Registro'].join(','));
                     conferencias.forEach(c => {
-                        const turno = c.horario ? (c.horario === 'vespertino' ? 'Vespertino' : 'Matutino') : '';
+                        const turno = horarioDisplay(c.horario);
                         rows.push([c.id, escapeCsv(c.nombre || c.titulo || ''), escapeCsv(c.ponente || c.nombre_ponente || ''), c.fecha || '', c.horario || '', escapeCsv(c.ubicacion || ''), c.cupo || c.capacidad || '', turno, formatDate(c.created_at)].join(','));
                     });
 

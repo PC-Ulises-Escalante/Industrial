@@ -109,13 +109,20 @@ console.debug('[auth.js] loaded');
                 `;
                 document.getElementById('btn-logout').addEventListener('click', handleLogout);
             } else {
-                // Registro deshabilitado en UI — botón de registro removido
+                // Mostrar botón de registro y login para usuarios no autenticados.
+                const regOpen = (typeof window.REGISTRATION_OPEN !== 'undefined') ? Boolean(window.REGISTRATION_OPEN) : true;
                 authContainer.innerHTML = `
+                    ${regOpen ? `<a href="registro.html" class="btn-register" id="nav-register">Registro</a>` : `<button class="btn-register disabled" id="nav-register" disabled>Registro cerrado</button>`}
                     <button class="btn-login" id="btn-login">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                         Iniciar Sesión
                     </button>
                 `;
+                // If registration is closed, show a friendly alert instead of navigating
+                const navRegisterEl = document.getElementById('nav-register');
+                if (navRegisterEl && navRegisterEl.tagName === 'BUTTON') {
+                    navRegisterEl.addEventListener('click', (e) => { e.preventDefault(); alert('Registro cerrado. No se permiten nuevos usuarios en este momento.'); });
+                }
                 document.getElementById('btn-login').addEventListener('click', showLoginModal);
             }
             // update mobile drawer contents if present

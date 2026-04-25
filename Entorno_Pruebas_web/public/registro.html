@@ -175,6 +175,7 @@
                             <option value="" disabled selected>Seleccionar</option>
                             <option value="matutino">Matutino</option>
                             <option value="vespertino">Vespertino</option>
+                            <option value="sabatino">Sabatino</option>
                         </select>
                         <span class="form-error" id="err-alumno-horario"></span>
                     </div>
@@ -257,6 +258,7 @@
                             <option value="" disabled selected>Seleccionar</option>
                             <option value="matutino">Matutino</option>
                             <option value="vespertino">Vespertino</option>
+                            <option value="sabatino">Sabatino</option>
                         </select>
                         <span class="form-error" id="err-invitado-horario"></span>
                     </div>
@@ -334,7 +336,8 @@
     document.addEventListener("DOMContentLoaded", () => {
         // Desactivar registro en el cliente por defecto. Para reactivar,
         // configurar `window.REGISTRATION_OPEN = true` antes de cargar este script
-        const REGISTRATION_OPEN = (typeof window.REGISTRATION_OPEN !== 'undefined') ? Boolean(window.REGISTRATION_OPEN) : false;
+        // Por defecto en esta instancia activamos el registro para permitir pruebas locales
+        const REGISTRATION_OPEN = (typeof window.REGISTRATION_OPEN !== 'undefined') ? Boolean(window.REGISTRATION_OPEN) : true;
         if (!REGISTRATION_OPEN) {
             const badge = document.querySelector('.registro-badge');
             if (badge) badge.textContent = 'Registro cerrado';
