@@ -550,8 +550,7 @@
                         return [];
                     }
 
-                    const [alumnos, equipos, proyectos, conferencias] = await Promise.all([
-                        fetchSection('/api/users'),
+                    const [equipos, proyectos, conferencias] = await Promise.all([
                         fetchSection('/api/deportes/equipos'),
                         fetchSection('/api/proyectos'),
                         fetchSection('/api/conferencias')
@@ -773,8 +772,7 @@
                     const now = new Date();
                     const fechaStr = now.toISOString().split('T')[0];
 
-                    const [alumnos, equipos, proyectos, conferencias] = await Promise.all([
-                        fetchSection('/api/users'),
+                    const [equipos, proyectos, conferencias] = await Promise.all([
                         fetchSection('/api/deportes/equipos'),
                         fetchSection('/api/proyectos'),
                         fetchSection('/api/conferencias')
